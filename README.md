@@ -1,4 +1,4 @@
-# DigitalStage
+# MeetingCenter - UI Side
 Author: Joseph Francis, 2023
 Project License: MIT
 
