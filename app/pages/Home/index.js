@@ -63,6 +63,7 @@ thisPageSpecs.required = {
             function () {
                 //~_onFirstLoad//~
 window.ThisPageNow = ThisPage;
+ThisPage.liveIndicator = ThisPage.getByAttr$({appuse:"live-indicator"});
 
 ThisPage.parts.welcome.subscribe('sendChat', onSendChat)
 
@@ -97,18 +98,20 @@ ThisPage.activePeer = new RTCPeerConnection();;
 
 ThisPage.activePeer.addEventListener('datachannel', event => {
   ThisPage.activeDataChannel = event.channel;
-  console.log('got datachannel',event.channel);
+  setMeetingStatus('open');
+  ThisPage.activeDataChannel.onopen = handleSendChannelStatusChange;
+  ThisPage.activeDataChannel.onclose = handleSendChannelStatusChange;
+  ThisPage.activeDataChannel.onmessage = onChannelMessage
+
 })
 
-ThisPage.localSendChannel = ThisPage.activePeer.createDataChannel("sendChannel");
-ThisPage.localSendChannel.onopen = handleSendChannelStatusChange;
-ThisPage.localSendChannel.onclose = handleSendChannelStatusChange;
-ThisPage.localSendChannel.onmessage = onChannelMessage
-
+ThisPage.activeDataChannel = ThisPage.activePeer.createDataChannel("sendChannel");
+ThisPage.activeDataChannel.onopen = handleSendChannelStatusChange;
+ThisPage.activeDataChannel.onclose = handleSendChannelStatusChange;
+ThisPage.activeDataChannel.onmessage = onChannelMessage
 
 
 ThisPage.activePeer.ontrack = function({ streams: [stream] }) {
-  console.log('ontrack')
   const remoteVideo = ThisPage.getByAttr$({appuse: 'remote-video'}).get(0);
   if (remoteVideo) {
     remoteVideo.srcObject = stream;
@@ -160,7 +163,6 @@ actions.selectAudioSource = selectAudioSource;
 function selectAudioSource(theParams, theTarget) {
   var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
   ThisApp.currentAudioDeviceID = tmpParams.deviceId;
-  console.log('ThisApp.currentAudioDeviceID',ThisApp.currentAudioDeviceID);
 
   var tmpConstraints = { video: false, audio: true, deviceId: {
       exact: [ThisApp.currentAudioDeviceID]
@@ -174,7 +176,6 @@ function selectAudioSource(theParams, theTarget) {
       if (localSource) {
         localSource.srcObject = stream;
       }
-  console.log('adding local tracks to peer');
       stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
     },
     error => {
@@ -191,13 +192,11 @@ function selectVideoSource(theParams, theTarget) {
   
   
   ThisApp.currentVideoDeviceID = tmpParams.deviceId;
-  console.log('ThisApp.currentVideoDeviceID',ThisApp.currentVideoDeviceID);
   
   var tmpConstraints = { video: {deviceId: {
       exact: [ThisApp.currentVideoDeviceID]
     }}, audio: true};
 
-console.log('tmpConstraints',tmpConstraints);
 
   
   navigator.getUserMedia(
@@ -207,7 +206,6 @@ console.log('tmpConstraints',tmpConstraints);
       if (localVideo) {
         localVideo.srcObject = stream;
       }
-  console.log('adding local tracks to peer');
       stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
     },
     error => {
@@ -277,7 +275,6 @@ function refreshAudioMediaSources() {
 function refreshVideoMediaSources() {
 
   var tmpDevices = ThisPage.parts.welcome.mediaInfo.devices;
-  //console.log('tmpDevices',tmpDevices);
 
   var tmpHTML = ['<div class="ui vertical menu fluid">'];
 
@@ -336,16 +333,30 @@ function refreshUI() {
 
 
 
+function setMeetingStatus(theStatus){
+  var tmpIsOpen = ( theStatus == 'open');
+  if( tmpIsOpen ){
+    ThisPage.liveIndicator.removeClass('hidden')
+  } else {
+    ThisPage.liveIndicator.addClass('hidden')
+  }
+  
+}
 
 function onChannelMessage(event) {
   console.log('onChannelMessage',event)
 }
 function handleSendChannelStatusChange(event) {
-  console.log('handleSendChannelStatusChange',event)
-  if (sendChannel) {
-    var state = sendChannel.readyState;
-    console.log('handleSendChannelStatusChange state',state);
+  if( event && event.type ){
+    setMeetingStatus(event.type);
+  } else {
+    console.log('unknown status change event from data channel',event)
   }
+  
+  // if (sendChannel) {
+  //   var state = sendChannel.readyState;
+  //   console.log('handleSendChannelStatusChange state',state);
+  // }
 }
 
 actions.requestDataConnect = requestDataConnect;
@@ -355,10 +366,6 @@ function requestDataConnect(theParams, theTarget) {
     alert('No person selected', 'Select a person', 'e');
     return;
   }
-  console.log('requestDataConnect', tmpParams.userid);
-
-   
-  
 }
 
 actions.requestMeeting = requestMeeting;
@@ -370,7 +377,6 @@ function requestMeeting(theParams, theTarget) {
     return;
   }
 
-  //console.log('send requestMeeting', tmpParams.userid)
 
   //--- Quick test for one peer to peer
   var self = this;
@@ -415,7 +421,7 @@ function onPeopleList(theMsg) {
   
 }
 function onMeetingRequst(theMsg) {
-  //console.log('onMeetingRequst theMsg', theMsg);
+
   var tmpTitle = 'Meeting Request from ' + theMsg.fromname
   var tmpMsg = 'Do you want to join a meeting with ' + theMsg.fromname + '?'
   var self = this;
@@ -440,9 +446,13 @@ function onMeetingRequst(theMsg) {
 
             ThisPage.activePeer.setLocalDescription(new RTCSessionDescription(theAnswer)).then(
               function () {
+           
                 ThisPage.wsclient.send(JSON.stringify({
                   action: 'meetingresponse', answer: self.activeAnswer, message: tmpReplyMsg
                 }))
+
+                
+
               }
             )
 
@@ -465,33 +475,13 @@ function onMeetingRequst(theMsg) {
   })
 
 }
-var receiveChannel;
 
-function handleReceiveMessage(event) {
-  console.log('handleReceiveMessage',event.data)
-}
-
-function receiveChannelCallback(event) {
-  receiveChannel = event.channel;
-  receiveChannel.onmessage = handleReceiveMessage;
-  console.log('receiveChannelCallback',typeof(event.channel))
-  
-  //receiveChannel.onopen = handleReceiveChannelStatusChange;
-  //receiveChannel.onclose = handleReceiveChannelStatusChange;
-}
 
 function onMeetingResponse(theMsg) {
-  //console.log('onMeetingResponse',theMsg);
   var self = this;
 
-  //var theSocketID = 'todo';
 
   if (theMsg && theMsg.message && theMsg.message.reply === true) {
-
-    //alert('yes!');
-
-
-
 
 
     var tmpAnswer = theMsg.answer;
@@ -507,14 +497,15 @@ function onMeetingResponse(theMsg) {
             userid: theMsg.fromid
           })
           ThisPage.isAlreadyCalling = true;
-          //self.callUser(theSocketID);
+          console.log('Calling back', typeof(ThisPage.activePeer));
 
         } else {
-          //console.log('we have connection', typeof(ThisPage.activePeer));
+          console.log('we have connection', typeof(ThisPage.activePeer));
           ThisPage.inMeetingRequest = false;
 
+        
 
-
+          
 
         }
       });

@@ -1,11 +1,13 @@
 <div class="ui segment basic pad0 mar3">
   <div class="ui header large blue center aligned">
     Meeting Center
+    <div appuse="live-indicator" class="toright hidden" style="background-color:red;color:white;border:solid 3px black">LIVE</div>
+    
   </div>
 
     <div class="pad3"></div>
     <audio autoplay id="remote-audio"></audio>
-    <video style="width:100%;border:solid 2px #ccc;" autoplay appuse="remote-video"></video>
+    <video style="width:100%;border:solid 2px #ccc;" autoplay class="remote-video" id="remote-video"></video>
 
 
 </div>
