@@ -78,7 +78,7 @@ ThisPage.stage = {
 ThisApp.stage = ThisPage.stage;
 
 
-var tmpURL = ActionAppCore.util.getWebsocketURL('actions', 'ws-stage');
+var tmpURL = ActionAppCore.util.getWebsocketURL('actions', 'ws-main');
 ThisPage.wsclient = new WebSocket(tmpURL);
 ThisPage.wsclient.onmessage = function (event) {
   var tmpData = '';
@@ -109,7 +109,7 @@ ThisPage.localSendChannel.onmessage = onChannelMessage
 
 ThisPage.activePeer.ontrack = function({ streams: [stream] }) {
   console.log('ontrack')
-  const remoteVideo = document.getElementById("remote-video");
+  const remoteVideo = ThisPage.getByAttr$({appuse: 'remote-video'}).get(0);
   if (remoteVideo) {
     remoteVideo.srcObject = stream;
   }
@@ -170,7 +170,7 @@ function selectAudioSource(theParams, theTarget) {
   navigator.getUserMedia(
     tmpConstraints,
     stream => {
-      const localSource = document.getElementById("local-audio");
+      const localSource = ThisPage.getByAttr$({appuse: 'local-audio'}).get(0);
       if (localSource) {
         localSource.srcObject = stream;
       }
@@ -203,8 +203,7 @@ console.log('tmpConstraints',tmpConstraints);
   navigator.getUserMedia(
     tmpConstraints,
     stream => {
-      const localVideo = document.getElementById("local-video");
-      console.log('setting stream',stream);
+      const localVideo = ThisPage.getByAttr$({appuse: 'local-video'}).get(0);
       if (localVideo) {
         localVideo.srcObject = stream;
       }
