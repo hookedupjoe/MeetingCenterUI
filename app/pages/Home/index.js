@@ -114,6 +114,7 @@ ThisPage.activeDataChannel.onmessage = onChannelMessage
 ThisPage.activePeer.ontrack = function({ streams: [stream] }) {
   const remoteVideo = ThisPage.getByAttr$({appuse: 'remote-video'}).get(0);
   if (remoteVideo) {
+    console.log('remoteVideo set')
     remoteVideo.srcObject = stream;
   }
 };
