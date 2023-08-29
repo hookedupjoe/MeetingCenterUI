@@ -463,10 +463,6 @@ let processor = {
 
     const image = new Image();
     image.src = "./res/cutout.png";
-    image.addEventListener("load", () => {
-      self.ctx3.drawImage(image, 0, 0, this.width, this.height);
-      this.ctx3Data = this.ctx3.getImageData(0, 0, this.width, this.height);
-    });
 
     // this.cutoutEl = ThisPage.getByAttr$({appuse: 'cutout'}).get(0);
     // this.cutoutCtx = this.cutoutEl.getContext("2d");
@@ -492,11 +488,21 @@ let processor = {
     self.snapwhen = 7;
     self.snapat = 0;
 
-    this.video.addEventListener("play", function() {
+    self.ctx3Data = false;
+    image.addEventListener("load", () => {
+      self.ctx3.drawImage(image, 0, 0, self.width, self.height);
+      self.ctx3Data = self.ctx3.getImageData(0, 0, self.width, self.height);
+
+      self.video.addEventListener("play", function() {
         // self.width = self.video.videoWidth ;
         // self.height = self.video.videoHeight;
         self.timerCallback();
       }, false);
+
+    });
+
+
+    
   },
 
   computeFrame: function() {
@@ -519,9 +525,7 @@ let processor = {
       let rc = this.initialSnapshot.data[i * 4 + 0];
       let gc = this.initialSnapshot.data[i * 4 + 1];
       let bc = this.initialSnapshot.data[i * 4 + 2];
-      let rbc = this.ctx3Data.data[i * 4 + 0];
-      //let gbc = this.ctx3Data.data[i * 4 + 1];
-      //let bbc = this.ctx3Data.data[i * 4 + 2];
+      
       
       
       let rir = (r<rc+this.br) && (r>rc-this.br);
@@ -529,8 +533,18 @@ let processor = {
       let bir = (b<bc+this.bb) && (b>bc-this.bb);
       let inRange = ( rir && gir && bir );
 
+      var inCutout = false;
+      if( this.ctx3Data ){
+        let rbc = this.ctx3Data.data[i * 4 + 0];
+        //let gbc = this.ctx3Data.data[i * 4 + 1];
+        //let bbc = this.ctx3Data.data[i * 4 + 2];
+        if( !(rbc > 100 ) ){
+          inCutout = true;
+        }
+      }
+
       //show diff .. add this => || inRange
-      if ( !(rbc > 100 ) || ( inRange && this.showdiff === true) ){
+      if ( inCutout || ( inRange && this.showdiff === true) ){
         frame.data[i * 4 + 3] = 0;        
       }
         
