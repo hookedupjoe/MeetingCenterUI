@@ -28,7 +28,7 @@ thisPageSpecs.layoutOptions = {
 
     //~layoutConfig//~
 thisPageSpecs.layoutConfig = {
-        west__size: "400"
+        west__size: "4"
         , east__size: "450"
     }
 //~layoutConfig~//~
@@ -63,6 +63,9 @@ thisPageSpecs.required = {
             function () {
                 //~_onFirstLoad//~
 window.ThisPageNow = ThisPage;
+
+ThisPage.processor = processor;
+
 ThisPage.liveIndicator = ThisPage.getByAttr$({appuse:"live-indicator"});
 
 ThisPage.parts.welcome.subscribe('sendChat', onSendChat)
@@ -114,7 +117,7 @@ ThisPage.activeDataChannel.onmessage = onChannelMessage
 ThisPage.activePeer.ontrack = function({ streams: [stream] }) {
   const remoteVideo = ThisPage.getByAttr$({appuse: 'remote-video'}).get(0);
   if (remoteVideo) {
-    console.log('remoteVideo set')
+    console.log('remoteVideo set');
     remoteVideo.srcObject = stream;
   }
 };
@@ -207,7 +210,9 @@ function selectVideoSource(theParams, theTarget) {
       if (localVideo) {
         localVideo.srcObject = stream;
       }
-      stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
+      console.log('doload');
+      processor.doLoad(localVideo);
+    stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
     },
     error => {
       console.warn(error.message);
@@ -398,6 +403,115 @@ function requestMeeting(theParams, theTarget) {
 
 
 }
+
+
+let processor = {
+  timerCallback: function() {
+    if (this.video.paused || this.video.ended) {
+      return;
+    }
+    this.computeFrame();
+    let self = this;
+    setTimeout(function () {
+        self.timerCallback();
+      }, 0);
+  },
+
+  snapshot: function(theType){
+    this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
+    this.initialSnapshot = this.ctx1.getImageData(0, 0, this.width, this.height);
+  },
+  doLoad: function(theVideoEl) {
+    this.video = theVideoEl;
+    
+    this.c1 = document.getElementById("c1");
+    this.ctx1 = this.c1.getContext("2d",{willReadFrequently: true});
+    this.c2 = document.getElementById("c2");
+    this.ctx2 = this.c2.getContext("2d",{willReadFrequently: true});
+    this.c3 = document.getElementById("c3");
+    this.ctx3 = this.c3.getContext("2d");
+    
+    var self = this;
+
+    const image = new Image();
+    image.src = "./res/cutout.png";
+    image.addEventListener("load", () => {
+      self.ctx3.drawImage(image, 0, 0, this.width, this.height);
+      this.ctx3Data = this.ctx3.getImageData(0, 0, this.width, this.height);
+    });
+
+    // this.cutoutEl = ThisPage.getByAttr$({appuse: 'cutout'}).get(0);
+    // this.cutoutCtx = this.cutoutEl.getContext("2d");
+
+    
+    self.width = self.video.videoWidth || 640;
+    self.height = self.video.videoHeight || 480;
+
+
+
+
+
+    self.r = 0;
+    self.g = 100;
+    self.b = 150;
+
+    self.br = 30;
+    self.bg = 30;
+    self.bb = 30;
+    self.snapshot();
+
+    
+    self.snapwhen = 7;
+    self.snapat = 0;
+
+    this.video.addEventListener("play", function() {
+        // self.width = self.video.videoWidth ;
+        // self.height = self.video.videoHeight;
+        self.timerCallback();
+      }, false);
+  },
+
+  computeFrame: function() {
+
+
+    this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
+    let frame = this.ctx1.getImageData(0, 0, this.width, this.height);
+        let l = frame.data.length / 4;
+
+        this.snapat++;
+        if( this.snapat >= this.snapwhen){
+          this.snapat = 0;
+          this.snapshot();
+        }
+
+    for (let i = 0; i < l; i++) {
+      let r = frame.data[i * 4 + 0];
+      let g = frame.data[i * 4 + 1];
+      let b = frame.data[i * 4 + 2];
+      let rc = this.initialSnapshot.data[i * 4 + 0];
+      let gc = this.initialSnapshot.data[i * 4 + 1];
+      let bc = this.initialSnapshot.data[i * 4 + 2];
+      let rbc = this.ctx3Data.data[i * 4 + 0];
+      //let gbc = this.ctx3Data.data[i * 4 + 1];
+      //let bbc = this.ctx3Data.data[i * 4 + 2];
+      
+      
+      let rir = (r<rc+this.br) && (r>rc-this.br);
+      let gir = (g<gc+this.bg) && (g>gc-this.bg);
+      let bir = (b<bc+this.bb) && (b>bc-this.bb);
+      let inRange = ( rir && gir && bir );
+
+      //show diff .. add this => || inRange
+      if ( !(rbc > 100 ) || ( inRange && this.showdiff === true) ){
+        frame.data[i * 4 + 3] = 0;        
+      }
+        
+    }
+    this.ctx2.putImageData(frame, 0, 0);
+    return;
+  }
+};
+
 
 actions.sendProfile = sendProfile;
 function sendProfile() {

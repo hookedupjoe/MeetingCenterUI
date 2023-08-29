@@ -3,38 +3,38 @@
   <div class="ui header large blue center aligned">
     My Video
   </div>
-<audio appuse="local-audio"></audio>
-<video style="width:100%;border:solid 2px #ccc;" autoplay muted appuse="local-video"></video>
-<div class="pad3"></div>
-        <div class="ui button blue basic" pageaction="refreshMediaSources">
-          Refresh Audio/Video Sources
-        </div>
-        <div class="ui message">
-          Click a video source below, it will show in the window above.  That is what the other person will see in the meeting. 
-          <br />
-          Note: You can join and view without sharing video or audio.
-        </div>
-        <div pagespot="REM_____video-sources"></div>
-        
-<div class="ui nothidden">
-  <div class="ui segment attached basic pad0 mar0">
-    <div class="mar0 pad0 ui top attached tabular menu">
-      <a appuse="tablinks" group="inputtabs" item="maintab1" pageaction="showSubPage" class="item blue active ">Audio</a>
-      <a appuse="tablinks" group="inputtabs" item="maintab2" pageaction="showSubPage" class="item blue">Video</a>
-    </div>
-    <div class=" ui  bottom attached slim blue segment   ">
-      <div appuse="cards" group="inputtabs" item="maintab1" class="pad0 ">
-                <div pagespot="audio-sources"></div>
-
-      </div>
-      <div appuse="cards" group="inputtabs" item="maintab2" class="pad0  hidden ">
-        <div pagespot="video-sources"></div>
-
-      </div>
-    </div>
-
+  <audio appuse="local-audio"></audio>
+  <video style="width:250px;border:solid 2px #ccc;" autoplay muted appuse="local-video"></video>
+  <div class="pad3"></div>
+  <div class="ui button blue basic" pageaction="refreshMediaSources">
+    Refresh Audio/Video Sources
   </div>
-</div>        
+  <div class="ui message">
+    Click a video source below, it will show in the window above.  That is what the other person will see in the meeting.
+    <br />
+    Note: You can join and view without sharing video or audio.
+  </div>
+  <div pagespot="REM_____video-sources"></div>
+
+  <div class="ui nothidden">
+    <div class="ui segment attached basic pad0 mar0">
+      <div class="mar0 pad0 ui top attached tabular menu">
+        <a appuse="tablinks" group="inputtabs" item="maintab1" pageaction="showSubPage" class="item blue active ">Video</a>
+        <a appuse="tablinks" group="inputtabs" item="maintab2" pageaction="showSubPage" class="item blue">Audio</a>
+      </div>
+      <div class=" ui  bottom attached slim blue segment   ">
+        <div appuse="cards" group="inputtabs" item="maintab1" class="pad0 ">
+
+          <div pagespot="video-sources"></div>
+        </div>
+        <div appuse="cards" group="inputtabs" item="maintab2" class="pad0  hidden ">
+
+          <div pagespot="audio-sources"></div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
 
 </div>
-

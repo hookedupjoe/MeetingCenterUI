@@ -2,12 +2,16 @@
   <div class="ui header large blue center aligned">
     Meeting Center
     <div appuse="live-indicator" class="toright hidden" style="background-color:red;color:white;border:solid 3px black">LIVE</div>
-    
   </div>
 
     <div class="pad3"></div>
-    <audio autoplay appuse="remote-audio"></audio>
-    <video style="width:100%;border:solid 2px #ccc;" autoplay appuse="remote-video"></video>
-
+    
+    <audio autoplay id="remote-audio"></audio>
+    <video style="width:640;height:480px;border:solid 2px #ccc;" autoplay class="remote-video" id="remote-video"></video>
+    <div>
+      <canvas style="display:none;width:auto;height:auto;" id="c1" width="640" height="480" ></canvas>
+      <canvas style="width:auto;height:auto;background-image: url(./res/back1.jpg);background-repeat: no-repeat;" id="c2" width="640" height="480"  ></canvas>
+      <canvas style="width:auto;height:auto;background-image: url(./res/cutout.png);background-repeat: no-repeat;" id="c3" width="640" height="480"  ></canvas>
+    </div>
 
 </div>
