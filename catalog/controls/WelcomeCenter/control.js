@@ -4,6 +4,13 @@
     options: {
       padding: false,
       required: {
+        controls: {
+          map: {
+            "ChatControl": {
+              name: 'ChatControl',
+            source: '__app',}
+          }
+        },
             templates: {
               map:
               {
@@ -89,6 +96,7 @@
 
 
   ControlCode.openTabChat = function() {
+    var dfd = $.Deferred();
     var tmpTabKey = 'tab-chat';
     var tmpTabTitle = 'Chat';
     var tmpIcon = 'user';
@@ -108,9 +116,12 @@
          self.chatControl = theControl;
          //temp disable --> below
          self.tabs.gotoTab('main');
-         self.chatControl.subscribe('sendChat',onSendChat.bind(self))
+         self.chatControl.subscribe('sendChat',onSendChat.bind(self));
+         dfd.resolve(true);
       }
     });
+
+    return dfd.promise();
   }
 
 
@@ -129,12 +140,9 @@
     });
     
     this.loadSpot('dashhome', {},  "WelcomeHome");
+    var self = this;
+    //--- Note: We preloaded the control used in the required area
     this.openTabChat();
-    
-    
-    
-    
-
   }
 
   var ThisControl = {
