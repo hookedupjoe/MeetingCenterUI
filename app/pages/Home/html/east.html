@@ -1,12 +1,16 @@
 <div class="mar2">
 
-  <div class="ui header large blue center aligned">
-    My Video
-  </div>
-  <audio appuse="local-audio"></audio>
-  <video style="width:250px;border:solid 2px #ccc;" autoplay muted appuse="local-video"></video>
-  <div class="pad3"></div>
-  <div class="ui button blue basic" pageaction="refreshMediaSources">
+  <div class="ui segment attached basic pad0 mar0">
+    <div class="mar0 pad0 ui top attached tabular menu">
+      <a appuse="tablinks" group="toptabs" item="maintab1" pageaction="showSubPage" class="item blue active ">Select Source</a>
+      <a appuse="tablinks" group="toptabs" item="maintab2" pageaction="showSubPage" class="item blue">My Video</a>
+    </div>
+    <div class=" ui  bottom attached slim blue segment   ">
+      <div appuse="cards" group="toptabs" item="maintab1" class="pad0 ">
+
+
+
+<div class="ui button blue basic" pageaction="refreshMediaSources">
     Refresh Audio/Video Sources
   </div>
   <div class="ui message">
@@ -14,7 +18,7 @@
     <br />
     Note: You can join and view without sharing video or audio.
   </div>
-  <div pagespot="REM_____video-sources"></div>
+  
 
   <div class="ui nothidden">
     <div class="ui segment attached basic pad0 mar0">
@@ -36,5 +40,22 @@
 
     </div>
   </div>
+  
+      </div>
+      <div appuse="cards" group="toptabs" item="maintab2" class="pad0 hidden">
+        <audio appuse="local-audio"></audio>
+        <video style="width:99%;height:auto;border:solid 2px #ccc;" autoplay muted appuse="local-video"></video>
+
+        <div>
+          <canvas style="display:none;width:auto;height:auto;" id="c1" width="640" height="480"></canvas>
+          <canvas style="width:99%;height:auto;background-image: url(./res/back1.jpg);background-repeat: no-repeat;" id="c2" width="640" height="480"></canvas>
+          <canvas style="width:99%;height:auto;background-image: url(./res/cutout.png);background-repeat: no-repeat;" id="c3" width="640" height="480"></canvas>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  
+  
 
 </div>

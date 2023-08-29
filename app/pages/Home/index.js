@@ -28,8 +28,8 @@ thisPageSpecs.layoutOptions = {
 
     //~layoutConfig//~
 thisPageSpecs.layoutConfig = {
-        west__size: "4"
-        , east__size: "450"
+        west__size: "400"
+        , east__size: "400"
     }
 //~layoutConfig~//~
     //~required//~
