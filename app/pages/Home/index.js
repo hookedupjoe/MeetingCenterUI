@@ -96,27 +96,49 @@ ThisPage.wsclient.onmessage = function (event) {
   
 }
 
-ThisPage.iceUsername = localStorage.getItem('meteredusername');
-ThisPage.iceCred = localStorage.getItem('meteredpassword');
+// ThisPage.iceUsername = localStorage.getItem('meteredusername');
+// ThisPage.iceCred = localStorage.getItem('meteredpassword');
 
-if( !(ThisPage.iceUsername && ThisPage.iceCred) ){
+// if( !(ThisPage.iceUsername && ThisPage.iceCred) ){
 
-  ThisApp.input('Enter Username:Password', 'Metered Log In').then(function(theVal){
-    if( theVal ){
-      var tmpParts = theVal.split(':');
-      if( tmpParts.length == 2 ){
-        var tmpUN = tmpParts[0];
-        var tmpPW = tmpParts[1];
-        localStorage.setItem('meteredusername', tmpUN);
-        localStorage.setItem('meteredpassword', tmpPW);
-        window.location = window.location;
-        return;
-      }
-    }
-    alert('Invalid or no value set, reload the page and try again');
-    return;
-  })
-}
+//   ThisApp.input('Enter Username:Password', 'Metered Log In').then(function(theVal){
+//     if( theVal ){
+//       var tmpParts = theVal.split(':');
+//       if( tmpParts.length == 2 ){
+//         var tmpUN = tmpParts[0];
+//         var tmpPW = tmpParts[1];
+//         localStorage.setItem('meteredusername', tmpUN);
+//         localStorage.setItem('meteredpassword', tmpPW);
+//         window.location = window.location;
+//         return;
+//       }
+//     }
+//     alert('Invalid or no value set, reload the page and try again');
+//     return;
+//   })
+// }
+
+// ,
+//       {
+//         urls: "turn:a.relay.metered.ca:80",
+//         username: ThisPage.iceUsername,
+//         credential: ThisPage.iceCred,
+//       },
+//       {
+//         urls: "turn:a.relay.metered.ca:80?transport=tcp",
+//         username: ThisPage.iceUsername,
+//         credential: ThisPage.iceCred,
+//       },
+//       {
+//         urls: "turn:a.relay.metered.ca:443",
+//         username: ThisPage.iceUsername,
+//         credential: ThisPage.iceCred,
+//       },
+//       {
+//         urls: "turn:a.relay.metered.ca:443?transport=tcp",
+//         username: ThisPage.iceUsername,
+//         credential: ThisPage.iceCred,
+//       },
 
 ThisPage.activePeer = new RTCPeerConnection({
   iceServers: [
