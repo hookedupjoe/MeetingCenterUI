@@ -96,6 +96,27 @@ ThisPage.wsclient.onmessage = function (event) {
   
 }
 
+ThisPage.iceUsername = localStorage.getItem('meteredusername');
+ThisPage.iceCred = localStorage.getItem('meteredpassword');
+
+if( !(ThisPage.iceUsername && ThisPage.iceCred) ){
+
+  ThisApp.input('Enter Username:Password', 'Metered Log In').then(function(theVal){
+    if( theVal ){
+      var tmpParts = theVal.split(':');
+      if( tmpParts.length == 2 ){
+        var tmpUN = tmpParts[0];
+        var tmpPW = tmpParts[1];
+        localStorage.setItem('meteredusername', tmpUN);
+        localStorage.setItem('meteredpassword', tmpPW);
+        window.location = window.location;
+        return;
+      }
+    }
+    alert('Invalid or no value set, reload the page and try again');
+    return;
+  })
+}
 
 ThisPage.activePeer = new RTCPeerConnection({
   // Using From https://www.metered.ca/tools/openrelay/
@@ -105,18 +126,18 @@ ThisPage.activePeer = new RTCPeerConnection({
   },
   {
     urls: "turn:openrelay.metered.ca:80",
-    username: "openrelayproject",
-    credential: "openrelayproject"
+    username: ThisPage.iceUsername,
+    credential: ThisPage.iceCred
   },
   {
     urls: "turn:openrelay.metered.ca:443",
-    username: "openrelayproject",
-    credential: "openrelayproject"
+    username: ThisPage.iceUsername,
+    credential: ThisPage.iceCred
   },
   {
     urls: "turn:openrelay.metered.ca:443?transport=tcp",
-    username: "openrelayproject",
-    credential: "openrelayproject"
+    username: ThisPage.iceUsername,
+    credential: ThisPage.iceCred
   }
 ]
 });
