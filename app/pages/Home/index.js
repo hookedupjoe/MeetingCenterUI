@@ -119,27 +119,31 @@ if( !(ThisPage.iceUsername && ThisPage.iceCred) ){
 }
 
 ThisPage.activePeer = new RTCPeerConnection({
-  // Using From https://www.metered.ca/tools/openrelay/
-  "iceServers": [
-  {
-    urls: "stun:openrelay.metered.ca:80"
-  },
-  {
-    urls: "turn:openrelay.metered.ca:80",
-    username: ThisPage.iceUsername,
-    credential: ThisPage.iceCred
-  },
-  {
-    urls: "turn:openrelay.metered.ca:443",
-    username: ThisPage.iceUsername,
-    credential: ThisPage.iceCred
-  },
-  {
-    urls: "turn:openrelay.metered.ca:443?transport=tcp",
-    username: ThisPage.iceUsername,
-    credential: ThisPage.iceCred
-  }
-]
+  iceServers: [
+      {
+        urls: "stun:stun.relay.metered.ca:80",
+      },
+      {
+        urls: "turn:a.relay.metered.ca:80",
+        username: ThisPage.iceUsername,
+        credential: ThisPage.iceCred,
+      },
+      {
+        urls: "turn:a.relay.metered.ca:80?transport=tcp",
+        username: ThisPage.iceUsername,
+        credential: ThisPage.iceCred,
+      },
+      {
+        urls: "turn:a.relay.metered.ca:443",
+        username: ThisPage.iceUsername,
+        credential: ThisPage.iceCred,
+      },
+      {
+        urls: "turn:a.relay.metered.ca:443?transport=tcp",
+        username: ThisPage.iceUsername,
+        credential: ThisPage.iceCred,
+      },
+  ],
 });
 
 ThisPage.activePeer.addEventListener('datachannel', event => {
