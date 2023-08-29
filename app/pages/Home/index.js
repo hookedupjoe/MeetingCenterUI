@@ -113,6 +113,8 @@ ThisPage.activeDataChannel.onopen = handleSendChannelStatusChange;
 ThisPage.activeDataChannel.onclose = handleSendChannelStatusChange;
 ThisPage.activeDataChannel.onmessage = onChannelMessage
 
+ThisPage.remoteCanvas = ThisPage.getAppUse('remote-canvas');
+ThisPage.ctxRemote = ThisPage.remoteCanvas.getContext("2d",{willReadFrequently: true});
 
 ThisPage.activePeer.ontrack = function({ streams: [stream] }) {
   const remoteVideo = ThisPage.getByAttr$({appuse: 'remote-video'}).get(0);
@@ -149,6 +151,10 @@ refreshUI();
     //~YourPageCode//~
 var sendChannel;
 
+ThisPage.getAppUse = function(theUse){
+  return ThisPage.getByAttr$({appuse: theUse}).get(0);
+}
+
 function promptForCamera(){
   
   navigator.getUserMedia(
@@ -176,7 +182,7 @@ function selectAudioSource(theParams, theTarget) {
   navigator.getUserMedia(
     tmpConstraints,
     stream => {
-      const localSource = ThisPage.getByAttr$({appuse: 'local-audio'}).get(0);
+      const localSource = ThisPage.getAppUse('local-audio');
       if (localSource) {
         localSource.srcObject = stream;
       }
@@ -206,7 +212,7 @@ function selectVideoSource(theParams, theTarget) {
   navigator.getUserMedia(
     tmpConstraints,
     stream => {
-      const localVideo = ThisPage.getByAttr$({appuse: 'local-video'}).get(0);
+      const localVideo = ThisPage.getAppUse('local-video');
       if (localVideo) {
         localVideo.srcObject = stream;
       }
@@ -350,7 +356,29 @@ function setMeetingStatus(theStatus){
 }
 
 function onChannelMessage(event) {
-  console.log('onChannelMessage',event)
+  if(!event && event.data) return;
+  
+  // this.outMax = this.outMax || 0;
+  // this.outMax++;
+
+  // if( this.outMax < 100){
+  //   console.log('event.data',typeof(event.data))
+  // }
+
+
+  //TODO --- START HERE TO STREAM CANVAS
+  //---- NOT DATA IF POSSIBLE??? 
+  //  const stream = canvas.captureStream();
+
+
+  // if( typeof(event.data) == '[object ImageData]'){
+  //   //--- frame data
+  //   if( this.ctxRemote ){
+  //     this.ctxRemote.putImageData(event.data, 0, 0);
+  //   }
+    
+  // }
+
 }
 function handleSendChannelStatusChange(event) {
   if( event && event.type ){
@@ -508,6 +536,11 @@ let processor = {
         
     }
     this.ctx2.putImageData(frame, 0, 0);
+    //  ToDo: USE STREAM OF CANVAS?
+    // if( ThisPage.activeDataChannel ){
+    //   ThisPage.activeDataChannel.send(frame)
+    // }
+    
     return;
   }
 };
