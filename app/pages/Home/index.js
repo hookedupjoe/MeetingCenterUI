@@ -122,27 +122,7 @@ ThisPage.activePeer = new RTCPeerConnection({
   iceServers: [
       {
         urls: "stun:stun.relay.metered.ca:80",
-      },
-      {
-        urls: "turn:a.relay.metered.ca:80",
-        username: ThisPage.iceUsername,
-        credential: ThisPage.iceCred,
-      },
-      {
-        urls: "turn:a.relay.metered.ca:80?transport=tcp",
-        username: ThisPage.iceUsername,
-        credential: ThisPage.iceCred,
-      },
-      {
-        urls: "turn:a.relay.metered.ca:443",
-        username: ThisPage.iceUsername,
-        credential: ThisPage.iceCred,
-      },
-      {
-        urls: "turn:a.relay.metered.ca:443?transport=tcp",
-        username: ThisPage.iceUsername,
-        credential: ThisPage.iceCred,
-      },
+      }
   ],
 });
 
