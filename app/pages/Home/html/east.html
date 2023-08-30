@@ -10,52 +10,52 @@
 
 
 
-<div class="ui button blue basic" pageaction="refreshMediaSources">
-    Refresh Audio/Video Sources
-  </div>
-  <div class="ui message">
-    Click a video source below, it will show in the window above.  That is what the other person will see in the meeting.
-    <br />
-    Note: You can join and view without sharing video or audio.
-  </div>
-  
-
-  <div class="ui nothidden">
-    <div class="ui segment attached basic pad0 mar0">
-      <div class="mar0 pad0 ui top attached tabular menu">
-        <a appuse="tablinks" group="inputtabs" item="maintab1" pageaction="showSubPage" class="item blue active ">Video</a>
-        <a appuse="tablinks" group="inputtabs" item="maintab2" pageaction="showSubPage" class="item blue">Audio</a>
-      </div>
-      <div class=" ui  bottom attached slim blue segment   ">
-        <div appuse="cards" group="inputtabs" item="maintab1" class="pad0 ">
-
-          <div pagespot="video-sources"></div>
+        <div class="ui button blue basic" pageaction="refreshMediaSources">
+          Refresh Audio/Video Sources
         </div>
-        <div appuse="cards" group="inputtabs" item="maintab2" class="pad0  hidden ">
-
-          <div pagespot="audio-sources"></div>
-
+        <div class="ui message">
+          Click a video source below, it will show in the window above.  That is what the other person will see in the meeting.
+          <br />
+          Note: You can join and view without sharing video or audio.
         </div>
-      </div>
 
-    </div>
-  </div>
-  
+
+        <div class="ui nothidden">
+          <div class="ui segment attached basic pad0 mar0">
+            <div class="mar0 pad0 ui top attached tabular menu">
+              <a appuse="tablinks" group="inputtabs" item="maintab1" pageaction="showSubPage" class="item blue active ">Video</a>
+              <a appuse="tablinks" group="inputtabs" item="maintab2" pageaction="showSubPage" class="item blue">Audio</a>
+            </div>
+            <div class=" ui  bottom attached slim blue segment   ">
+              <div appuse="cards" group="inputtabs" item="maintab1" class="pad0 ">
+
+                <div pagespot="video-sources"></div>
+              </div>
+              <div appuse="cards" group="inputtabs" item="maintab2" class="pad0  hidden ">
+
+                <div pagespot="audio-sources"></div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
       <div appuse="cards" group="toptabs" item="maintab2" class="pad0 hidden">
         <audio appuse="local-audio"></audio>
-        <video style="width:99%;height:auto;border:solid 2px #ccc;" autoplay muted appuse="local-video"></video>
 
         <div>
           <canvas style="display:none;width:auto;height:auto;" id="c1" width="640" height="480"></canvas>
-          <canvas style="width:99%;height:auto;background-image: url(./res/back1.jpg);background-repeat: no-repeat;" id="c2" width="640" height="480"></canvas>
-          <canvas style="width:99%;height:auto;background-image: url(./res/cutout.png);background-repeat: no-repeat;" id="c3" width="640" height="480"></canvas>
+          <canvas style="width:99%;height:auto;" id="c2" width="640" height="480"></canvas>
+          <canvas class="hidden" style="width:99%;height:auto;background-repeat: no-repeat;" id="c3" width="640" height="480"></canvas>
         </div>
 
       </div>
     </div>
   </div>
-  
-  
+
+
+  <video style="width:0%;height:auto;border:none;" autoplay="" muted="" appuse="local-video"></video>
 
 </div>

@@ -271,6 +271,11 @@ actions.selectVideoSource = selectVideoSource;
         }
         var tmpFPS = 30;
         processor.doLoad(localVideo, { frameDelayMS: 1000 / tmpFPS });
+
+        if( ThisPage.useCanvas === true ){
+
+        }
+        
         var tmpCanvasSteam = processor.c2.captureStream();
         tmpCanvasSteam.getTracks().forEach(
           track => {
@@ -280,8 +285,6 @@ actions.selectVideoSource = selectVideoSource;
             );
           }
         );
-
-       
 
         //stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
       },
@@ -524,8 +527,11 @@ let processor = {
     this.c2 = document.getElementById("c2");
     this.ctx2 = this.c2.getContext("2d",{willReadFrequently: true});
     this.c3 = document.getElementById("c3");
-    this.ctx3 = this.c3.getContext("2d");
+    this.ctx3 = this.c3.getContext("2d",{willReadFrequently: true});
     
+    this.showDiff = false;
+    this.showCutout = false;
+
     var self = this;
 
     const image = new Image();
@@ -611,10 +617,18 @@ let processor = {
         }
       }
 
-      this.showdiff = true;
+      //this.showdiff = true;
       //--- show diff .. add this => || inRange
       //inCutout ||   
-      if ( ( inRange && this.showdiff === true) ){
+      //if ( ( inRange && this.showdiff === true) ){
+      
+      if( this.showDiff != true){
+        inRange = false;
+      }
+      if( this.showCutout != true){
+        inCutout = false;
+      }
+      if ( inCutout || inRange ){
         frame.data[i * 4 + 3] = 0;        
       }
         
