@@ -238,20 +238,26 @@ refreshUI();
     //~YourPageCode//~
 var sendChannel;
 
-ThisPage.getAppUse = function(theUse){
-  return ThisPage.getByAttr$({appuse: theUse}).get(0);
+ThisPage.getAppUse = function(theUse) {
+  return ThisPage.getByAttr$({
+    appuse: theUse
+  }).get(0);
 }
 
-function promptForCamera(){
-  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function(stream){
+function promptForCamera() {
+  navigator.mediaDevices.getUserMedia({
+    video: true, audio: true
+  }).then(function(stream) {
     refreshUI();
-  });
+  },connectError);
 }
 
-function promptForMic(){
-  navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(function(stream){
+function promptForMic() {
+  navigator.mediaDevices.getUserMedia({
+    video: false, audio: true
+  }).then(function(stream) {
     refreshUI();
-  });
+  },connectError);
 }
 
 actions.selectAudioSource = selectAudioSource;
@@ -259,70 +265,87 @@ function selectAudioSource(theParams, theTarget) {
   var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
   ThisApp.currentAudioDeviceID = tmpParams.deviceId;
 
-  var tmpConstraints = { video: false, audio: true, deviceId: {
+  var tmpConstraints = {
+    video: false,
+    audio: true,
+    deviceId: {
       exact: [ThisApp.currentAudioDeviceID]
     }};
-  
-  
-        
-  navigator.mediaDevices.getUserMedia(tmpConstraints).then(function(stream){
+
+
+
+  navigator.mediaDevices.getUserMedia(tmpConstraints).then(
+    function(stream) {
       const localSource = ThisPage.getAppUse('local-audio');
       if (localSource) {
         localSource.srcObject = stream;
       }
       stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
-    });
+    },connectError);
 }
 
-actions.selectVideoSource = selectVideoSource;
-  function selectVideoSource(theParams, theTarget) {
-    var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
-
-
-    ThisApp.currentVideoDeviceID = tmpParams.deviceId;
-
-    var tmpConstraints = {
-      video: {
-        deviceId: {
-          exact: [ThisApp.currentVideoDeviceID]
-        }
-      }, audio: true
-    };
-
-
-
-    navigator.mediaDevices.getUserMedia(tmpConstraints).then(function(stream){
-        
-        const localVideo = ThisPage.getAppUse('local-video');
-        console.log('got video stream',typeof(stream))
-        
-        if (localVideo) {
-          localVideo.srcObject = stream;
-        }
-        var tmpFPS = 30;
-        processor.doLoad(localVideo, { frameDelayMS: 1000 / tmpFPS });
-
-//---> DO BELOW to send stream, but no audio
-//ToDo: Send canvas but audio from selected device???
-
-        // var tmpCanvasSteam = processor.c2.captureStream();
-        // tmpCanvasSteam.getTracks().forEach(
-        //   track => {
-        //     ThisPage.activePeer.addTrack(
-        //       track,
-        //       tmpCanvasSteam
-        //     );
-        //   }
-        // );
-
-       
-
-      stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
-      
-      });
-
-    //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
+function connectError(theError) {
+  if (theError && theError.message) {
+    alert(theError.message, "Can not connect", "e")
+  } else {
+    console.error("Can't connect", arguments);
+    alert('Device is most likely in use', "Can not connect", "e")
   }
+
+
+}
+actions.selectVideoSource = selectVideoSource;
+function selectVideoSource(theParams, theTarget) {
+  var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
+
+
+  ThisApp.currentVideoDeviceID = tmpParams.deviceId;
+
+  var tmpConstraints = {
+    video: {
+      deviceId: {
+        exact: [ThisApp.currentVideoDeviceID]
+      }
+    },
+    audio: true
+  };
+
+
+
+  navigator.mediaDevices.getUserMedia(tmpConstraints).then(function(stream) {
+
+    const localVideo = ThisPage.getAppUse('local-video');
+    console.log('got video stream', typeof(stream))
+
+    if (localVideo) {
+      localVideo.srcObject = stream;
+    }
+    var tmpFPS = 30;
+    processor.doLoad(localVideo, {
+      frameDelayMS: 1000 / tmpFPS
+    });
+
+    //---> DO BELOW to send stream, but no audio
+    //ToDo: Send canvas but audio from selected device???
+
+    // var tmpCanvasSteam = processor.c2.captureStream();
+    // tmpCanvasSteam.getTracks().forEach(
+    //   track => {
+    //     ThisPage.activePeer.addTrack(
+    //       track,
+    //       tmpCanvasSteam
+    //     );
+    //   }
+    // );
+
+
+
+    stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
+
+  },connectError);
+
+  //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
+}
 
 // actions.refreshMediaSources = refreshMediaSources;
 // function refreshMediaSources() {
@@ -346,15 +369,15 @@ function refreshAudioSources() {
   refreshMediaSourcesFromSystem()
 }
 
-function refreshMediaSourceLists(){
-  if( ThisPage.sourceSelection == 'audio' ){
+function refreshMediaSourceLists() {
+  if (ThisPage.sourceSelection == 'audio') {
     refreshAudioMediaSources();
     ThisPage.loadSpot('video-sources', '');
   } else {
-    refreshVideoMediaSources();  
+    refreshVideoMediaSources();
     ThisPage.loadSpot('audio-sources', '');
   }
-  
+
 }
 
 function refreshAudioMediaSources() {
@@ -385,7 +408,7 @@ function refreshAudioMediaSources() {
   });
   tmpHTML.push('</div>');
 
-  
+
   if (tmpFoundOne) {
     ThisPage.loadSpot('audio-sources', tmpHTML.join('\n'));
   } else {
@@ -401,7 +424,7 @@ function refreshVideoMediaSources() {
 
 
   var tmpDevices = ThisPage.mediaInfo.devices;
-  console.log('ThisPage.mediaInfo.devices',ThisPage.mediaInfo.devices);
+  console.log('ThisPage.mediaInfo.devices', ThisPage.mediaInfo.devices);
 
   var tmpHTML = ['<div class="ui vertical menu fluid">'];
 
@@ -439,20 +462,20 @@ function refreshVideoMediaSources() {
 
 
 function refreshUI() {
-  console.log( 'ThisPage.localVideoPlaying', ThisPage.localVideoPlaying);
-  console.log( 'ThisPage.localAudioPlaying', ThisPage.localAudioPlaying);
-  
-  
-  if( ThisPage.localVideoPlaying || ThisPage.localAudioPlaying ){
-    ThisPage.loadSpot('video-sources','');
-    ThisPage.loadSpot('audio-sources','');
-    
+  console.log('ThisPage.localVideoPlaying', ThisPage.localVideoPlaying);
+  console.log('ThisPage.localAudioPlaying', ThisPage.localAudioPlaying);
+
+
+  if (ThisPage.localVideoPlaying || ThisPage.localAudioPlaying) {
+    ThisPage.loadSpot('video-sources', '');
+    ThisPage.loadSpot('audio-sources', '');
+
     var tmpBtnText = 'Stop Using '
     var tmpBtnAction = ''
     var tmpMsgText = 'The ';
     var tmpIcon = '';
     ThisPage.closeAudio
-    if( ThisPage.localVideoPlaying  ){
+    if (ThisPage.localVideoPlaying) {
       tmpBtnText += "Camera"
       tmpBtnAction = 'closeVideo'
       tmpMsgText += 'Camera';
@@ -465,31 +488,31 @@ function refreshUI() {
       tmpIcon = 'microphone';
       ThisPage.localCanvas.addClass('hidden');
     }
-    
+
     ThisPage.deviceSelection.addClass('hidden');
-  
+
 
     var tmpBtn = '<div class="ui button basic blue small compact" pageaction="' + tmpBtnAction + '">' + tmpBtnText + '</div>';
     var tmpHdr = '<div class="ui label left pointing green large">' + tmpMsgText + ' is active</div>';
     var tmpInUse = `<div class="pad8"><h2 class="ui header">
-      <i class="icon green huge ${tmpIcon}"></i>
-      <div class="content">
-        ${tmpHdr + tmpBtn}
-      </div>
+    <i class="icon green huge ${tmpIcon}"></i>
+    <div class="content">
+    ${tmpHdr + tmpBtn}
+    </div>
     </h2></div>`
-    ThisPage.loadSpot('device-in-use',tmpInUse);
+    ThisPage.loadSpot('device-in-use', tmpInUse);
 
   } else {
     ThisPage.deviceSelection.removeClass('hidden');
-    ThisPage.loadSpot('device-in-use','<div class="ui message blue small">Select an Audio/Video Device</div>')  
+    ThisPage.loadSpot('device-in-use', '<div class="ui message blue small">Select an Audio/Video Device</div>')
     ThisPage.localCanvas.addClass('hidden');
   }
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
   ThisPage.loadSpot('your-disp-name', ThisPage.stage.profile.name);
   var tmpName = ThisPage.stage.profile.name;
   var tmpProfileStatus = 'new';
@@ -508,19 +531,19 @@ function refreshUI() {
 
 
 
-function setMeetingStatus(theStatus){
-  var tmpIsOpen = ( theStatus == 'open');
-  if( tmpIsOpen ){
+function setMeetingStatus(theStatus) {
+  var tmpIsOpen = (theStatus == 'open');
+  if (tmpIsOpen) {
     ThisPage.liveIndicator.removeClass('hidden')
   } else {
     ThisPage.liveIndicator.addClass('hidden')
   }
-  
+
 }
 
 function onChannelMessage(event) {
-  if(!event && event.data) return;
-  
+  if (!event && event.data) return;
+
   // this.outMax = this.outMax || 0;
   // this.outMax++;
 
@@ -530,7 +553,7 @@ function onChannelMessage(event) {
 
 
   //TODO --- START HERE TO STREAM CANVAS
-  //---- NOT DATA IF POSSIBLE??? 
+  //---- NOT DATA IF POSSIBLE???
   //  const stream = canvas.captureStream();
 
 
@@ -539,17 +562,17 @@ function onChannelMessage(event) {
   //   if( this.ctxRemote ){
   //     this.ctxRemote.putImageData(event.data, 0, 0);
   //   }
-    
+
   // }
 
 }
 function handleSendChannelStatusChange(event) {
-  if( event && event.type ){
+  if (event && event.type) {
     setMeetingStatus(event.type);
   } else {
-    console.log('unknown status change event from data channel',event)
+    console.log('unknown status change event from data channel', event)
   }
-  
+
   // if (sendChannel) {
   //   var state = sendChannel.readyState;
   //   console.log('handleSendChannelStatusChange state',state);
@@ -605,11 +628,11 @@ let processor = {
     this.computeFrame();
     let self = this;
     setTimeout(function () {
-        self.timerCallback();
-      }, self.frameDelayMS);
+      self.timerCallback();
+    }, self.frameDelayMS);
   },
 
-  snapshot: function(theType){
+  snapshot: function(theType) {
     this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
     this.initialSnapshot = this.ctx1.getImageData(0, 0, this.width, this.height);
   },
@@ -617,14 +640,20 @@ let processor = {
     this.options = theOptions || {};
     this.video = theVideoEl;
     this.frameDelayMS = this.options.frameDelayMS || 20;
-    
+
     this.c1 = document.getElementById("c1");
-    this.ctx1 = this.c1.getContext("2d",{willReadFrequently: true});
+    this.ctx1 = this.c1.getContext("2d", {
+      willReadFrequently: true
+    });
     this.c2 = document.getElementById("c2");
-    this.ctx2 = this.c2.getContext("2d",{willReadFrequently: true});
+    this.ctx2 = this.c2.getContext("2d", {
+      willReadFrequently: true
+    });
     this.c3 = document.getElementById("c3");
-    this.ctx3 = this.c3.getContext("2d",{willReadFrequently: true});
-    
+    this.ctx3 = this.c3.getContext("2d", {
+      willReadFrequently: true
+    });
+
     this.showDiff = false;
     this.showCutout = false;
 
@@ -636,7 +665,7 @@ let processor = {
     // this.cutoutEl = ThisPage.getByAttr$({appuse: 'cutout'}).get(0);
     // this.cutoutCtx = this.cutoutEl.getContext("2d");
 
-    
+
     self.width = self.video.videoWidth || 640;
     self.height = self.video.videoHeight || 480;
 
@@ -653,7 +682,7 @@ let processor = {
     self.bb = 30;
     self.snapshot();
 
-    
+
     self.snapwhen = 7;
     self.snapat = 0;
 
@@ -662,28 +691,28 @@ let processor = {
       self.ctx3.drawImage(image, 0, 0, self.width, self.height);
       self.ctx3Data = self.ctx3.getImageData(0, 0, self.width, self.height);
 
-      self.video.addEventListener("play", function() {
-        // self.width = self.video.videoWidth ;
-        // self.height = self.video.videoHeight;
-        self.timerCallback();
-      }, false);
 
     });
+    self.video.addEventListener("play", function() {
+      // self.width = self.video.videoWidth ;
+      // self.height = self.video.videoHeight;
+      self.timerCallback();
+    }, false);
 
 
-    
+
   },
 
   computeFrame: function() {
 
-    
+
     this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
     let frame = this.ctx1.getImageData(0, 0, this.width, this.height);
-    
+
     let l = frame.data.length / 4;
 
     this.snapat++;
-    if( this.snapat >= this.snapwhen){
+    if (this.snapat >= this.snapwhen) {
       this.snapat = 0;
       this.snapshot();
     }
@@ -695,46 +724,46 @@ let processor = {
       let rc = this.initialSnapshot.data[i * 4 + 0];
       let gc = this.initialSnapshot.data[i * 4 + 1];
       let bc = this.initialSnapshot.data[i * 4 + 2];
-      
-      
-      
-      let rir = (r<rc+this.br) && (r>rc-this.br);
-      let gir = (g<gc+this.bg) && (g>gc-this.bg);
-      let bir = (b<bc+this.bb) && (b>bc-this.bb);
-      let inRange = ( rir && gir && bir );
+
+
+
+      let rir = (r < rc+this.br) && (r > rc-this.br);
+      let gir = (g < gc+this.bg) && (g > gc-this.bg);
+      let bir = (b < bc+this.bb) && (b > bc-this.bb);
+      let inRange = (rir && gir && bir);
 
       var inCutout = false;
-      if( this.ctx3Data ){
+      if (this.ctx3Data) {
         let rbc = this.ctx3Data.data[i * 4 + 0];
         //--- unlessneeded--> let gbc = this.ctx3Data.data[i * 4 + 1];
         //--- unlessneeded--> let bbc = this.ctx3Data.data[i * 4 + 2];
-        if( !(rbc > 100 ) ){
+        if (!(rbc > 100)) {
           inCutout = true;
         }
       }
 
       //this.showdiff = true;
       //--- show diff .. add this => || inRange
-      //inCutout ||   
+      //inCutout ||
       //if ( ( inRange && this.showdiff === true) ){
-      
-      if( this.showDiff != true){
+
+      if (this.showDiff != true) {
         inRange = false;
       }
-      if( this.showCutout != true){
+      if (this.showCutout != true) {
         inCutout = false;
       }
-      if ( inCutout || inRange ){
-        frame.data[i * 4 + 3] = 0;        
+      if (inCutout || inRange) {
+        frame.data[i * 4 + 3] = 0;
       }
-        
+
     }
     this.ctx2.putImageData(frame, 0, 0);
     //  ToDo: USE STREAM OF CANVAS?
     // if( ThisPage.activeDataChannel ){
     //   ThisPage.activeDataChannel.send(frame)
     // }
-    
+
     return;
   }
 };
@@ -760,43 +789,43 @@ function refreshPeople(thePeople) {
 
 function refreshMediaSourcesFromSystem() {
   var self = this;
-  navigator.mediaDevices.enumerateDevices().then(function(theDevices){
-      ThisPage.mediaInfo.devices = theDevices;
-      ThisPage.publish('NewMediaSources')
+  navigator.mediaDevices.enumerateDevices().then(function(theDevices) {
+    ThisPage.mediaInfo.devices = theDevices;
+    ThisPage.publish('NewMediaSources')
   });
 }
 
-function refreshPeopleUI(thePeople){
+function refreshPeopleUI(thePeople) {
 
-    var tmpHTML = [];
-    var tmpActive = false;
-    
-    for (var aID in thePeople) {
-      var tmpPerson = thePeople[aID];
-      tmpHTML.push('<div class="ui message">')
-      tmpHTML.push('<div class="ui header small toleft">')
-      tmpHTML.push(tmpPerson.name);
-      tmpHTML.push('</div>')
+  var tmpHTML = [];
+  var tmpActive = false;
 
-      if( ThisPage.stage.userid != tmpPerson.userid ){
-        tmpHTML.push('<div  userid="' + aID + '" pageaction="requestMeeting" class="ui button blue compact small toright">Request Meeting</div>');
-      }
-      
-      tmpHTML.push('<div class="clearboth"></div>')
-      tmpHTML.push('</div>')
+  for (var aID in thePeople) {
+    var tmpPerson = thePeople[aID];
+    tmpHTML.push('<div class="ui message">')
+    tmpHTML.push('<div class="ui header small toleft">')
+    tmpHTML.push(tmpPerson.name);
+    tmpHTML.push('</div>')
+
+    if (ThisPage.stage.userid != tmpPerson.userid) {
+      tmpHTML.push('<div  userid="' + aID + '" pageaction="requestMeeting" class="ui button blue compact small toright">Request Meeting</div>');
     }
-    
-    ThisPage.loadSpot('people-list', tmpHTML.join('\n'));
 
+    tmpHTML.push('<div class="clearboth"></div>')
+    tmpHTML.push('</div>')
   }
+
+  ThisPage.loadSpot('people-list', tmpHTML.join('\n'));
+
+}
 
 
 
 function onPeopleList(theMsg) {
-  if( theMsg && theMsg.people){
+  if (theMsg && theMsg.people) {
     refreshPeople(theMsg.people);
   }
-  
+
 }
 function onMeetingRequst(theMsg) {
 
@@ -824,12 +853,12 @@ function onMeetingRequst(theMsg) {
 
             ThisPage.activePeer.setLocalDescription(new RTCSessionDescription(theAnswer)).then(
               function () {
-           
+
                 ThisPage.wsclient.send(JSON.stringify({
                   action: 'meetingresponse', answer: self.activeAnswer, message: tmpReplyMsg
                 }))
 
-                
+
 
               }
             )
@@ -881,9 +910,9 @@ function onMeetingResponse(theMsg) {
           console.log('we have connection', typeof(ThisPage.activePeer));
           ThisPage.inMeetingRequest = false;
 
-        
 
-          
+
+
 
         }
       });
@@ -937,7 +966,7 @@ function processMessage(theMsg) {
 
   } else if (tmpAction == 'chat') {
     //ThisPage.parts.welcome.gotChat(theMsg);
-    console.log('gotChat',theMsg)
+    console.log('gotChat', theMsg)
   } else if (tmpAction == 'meetingrequest') {
     onMeetingRequst(theMsg);
   } else if (tmpAction == 'people') {
