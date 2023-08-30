@@ -70,6 +70,11 @@ ThisPage.liveIndicator = ThisPage.getByAttr$({appuse:"live-indicator"});
 
 ThisPage.mediaInfo = {};
 
+ThisPage.localVideo = ThisPage.getAppUse('local-video');
+ThisPage.localVideo.addEventListener("play", (event) => {
+  ThisPage.localVideoPlaying = true;
+  refreshUI()
+})
 
 //ThisPage.parts.welcome.subscribe('sendChat', onSendChat)
 
@@ -165,8 +170,8 @@ ThisPage.activeDataChannel.onopen = handleSendChannelStatusChange;
 ThisPage.activeDataChannel.onclose = handleSendChannelStatusChange;
 ThisPage.activeDataChannel.onmessage = onChannelMessage
 
-ThisPage.remoteCanvas = ThisPage.getAppUse('remote-canvas');
-ThisPage.ctxRemote = ThisPage.remoteCanvas.getContext("2d",{willReadFrequently: true});
+// ThisPage.remoteCanvas = ThisPage.getAppUse('remote-canvas');
+// ThisPage.ctxRemote = ThisPage.remoteCanvas.getContext("2d",{willReadFrequently: true});
 
 ThisPage.activePeer.ontrack = function({ streams: [stream] }) {
   const remoteVideo = ThisPage.getByAttr$({appuse: 'remote-video'}).get(0);
@@ -289,19 +294,19 @@ actions.selectVideoSource = selectVideoSource;
         }
         var tmpFPS = 30;
         processor.doLoad(localVideo, { frameDelayMS: 1000 / tmpFPS });
-        var tmpCanvasSteam = processor.c2.captureStream();
-        tmpCanvasSteam.getTracks().forEach(
-          track => {
-            ThisPage.activePeer.addTrack(
-              track,
-              tmpCanvasSteam
-            );
-          }
-        );
+        // var tmpCanvasSteam = processor.c2.captureStream();
+        // tmpCanvasSteam.getTracks().forEach(
+        //   track => {
+        //     ThisPage.activePeer.addTrack(
+        //       track,
+        //       tmpCanvasSteam
+        //     );
+        //   }
+        // );
 
        
 
-        //stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
+      stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
       },
       error => {
         console.warn(error.message);
@@ -410,6 +415,12 @@ function refreshVideoMediaSources() {
 
 
 function refreshUI() {
+  console.log( 'ThisPage.localVideoPlaying', ThisPage.localVideoPlaying);
+  
+  if( ThisPage.localVideoPlaying ){
+    ThisPage.loadSpot('video-sources','')
+  }
+  
   ThisPage.loadSpot('your-disp-name', ThisPage.stage.profile.name);
   var tmpName = ThisPage.stage.profile.name;
   var tmpProfileStatus = 'new';

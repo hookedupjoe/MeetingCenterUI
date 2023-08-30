@@ -13,31 +13,25 @@
 
   <div appuse="cards" group="profilestatus" item="backstage" class="hidden">
     <div class="ui message medium green">
-      <b><span pagespot="your-disp-name" class="ui bolder"></span>, you are on the list.  Select the type of audio / video to use.</b>      
+      <b><span pagespot="your-disp-name" class="ui bolder"></span>, you are on the list.  Select the type of audio / video to use.</b>
     </div>
-    
-  <div class="ui button blue basic" pageaction="refreshMediaSources">
-    Show Available Cameras
-  </div>
+
+    <div class="ui button blue basic" pageaction="refreshMediaSources">
+      Show Available Cameras
+    </div>
     <div pagespot="video-sources"></div>
 
-  <div class="ui message">
-    Click a video source below, it will show in the window above.  That is what the other person will see in the meeting.
-    <br />
-    Note: You can join and view without sharing video or audio.
-  </div>
 
-  
     <audio appuse="local-audio"></audio>
 
     <div>
       <canvas style="display:none;width:auto;height:auto;" id="c1" width="640" height="480"></canvas>
-      <canvas style="width:99%;height:auto;" id="c2" width="640" height="480"></canvas>
+
       <canvas class="hidden" style="max-width:320px;width:99%;height:auto;background-repeat: no-repeat;" id="c3" width="640" height="480"></canvas>
     </div>
 
 
-  <video style="width:0%;height:auto;border:none;" autoplay="" muted="" appuse="local-video"></video>
+
 
 
 
@@ -61,12 +55,6 @@
 
 </div>
 
-<div appuse="cards" group="meetingstatus" item="premeeting" class="mar3  hidden">
-
-
-
-</div>
-
 
 <div appuse="cards" group="meetingstatus" item="inmeeting" class="mar3 nothidden">
 
@@ -80,12 +68,12 @@
   <div class="pad3"></div>
 
   <audio autoplay appuse="remote-audio"></audio>
-  
+
+
+  <!--<canvas style="width:99%;height:auto;background-repeat: no-repeat;" appuse="remote-canvas" width="640" height="480"></canvas>-->
 
 
 
 </div>
-
-  <canvas style="width:99%;height:auto;background-repeat: no-repeat;" appuse="remote-canvas" width="640" height="480"></canvas>
 
 <video style="width:100%;height:auto;border:solid 2px #ccc;" autoplay class="remote-video" appuse="remote-video"></video>
