@@ -340,6 +340,7 @@ function selectVideoSource(theParams, theTarget) {
 
 
 
+    console.log("Adding tracks to remote peer")
     stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
 
   },connectError);
