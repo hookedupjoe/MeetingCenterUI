@@ -236,8 +236,6 @@ refreshUI();
 
     //------- --------  --------  --------  --------  --------  --------  -------- 
     //~YourPageCode//~
-ThisApp.navigator = navigator.mediaDevices || navigator;
-    
 var sendChannel;
 
 ThisPage.getAppUse = function(theUse){
@@ -245,31 +243,15 @@ ThisPage.getAppUse = function(theUse){
 }
 
 function promptForCamera(){
-  
-  ThisApp.navigator.getUserMedia(
-  { video: true, audio: true },
-  stream => {
-      //--- Do nothing, just validating / prompting for cameral use
-  },
-  error => {
-    console.warn(error.message);
-  }
-);
-
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function(stream){
+    refreshUI();
+  });
 }
 
 function promptForMic(){
-  
-  ThisApp.navigator.getUserMedia(
-  { video: false, audio: true },
-  stream => {
-      //--- Do nothing, just validating / prompting for cameral use
-  },
-  error => {
-    console.warn(error.message);
-  }
-);
-
+  navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(function(stream){
+    refreshUI();
+  });
 }
 
 actions.selectAudioSource = selectAudioSource;
@@ -281,22 +263,15 @@ function selectAudioSource(theParams, theTarget) {
       exact: [ThisApp.currentAudioDeviceID]
     }};
   
+  
         
-  ThisApp.navigator.getUserMedia(
-    tmpConstraints,
-    stream => {
+  navigator.mediaDevices.getUserMedia(tmpConstraints).then(function(stream){
       const localSource = ThisPage.getAppUse('local-audio');
       if (localSource) {
         localSource.srcObject = stream;
       }
       stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
-    },
-    error => {
-      console.warn(error.message);
-    }
-  );
-
-  //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
+    });
 }
 
 actions.selectVideoSource = selectVideoSource;
@@ -316,15 +291,20 @@ actions.selectVideoSource = selectVideoSource;
 
 
 
-    ThisApp.navigator.getUserMedia(
-      tmpConstraints,
-      stream => {
+    navigator.mediaDevices.getUserMedia(tmpConstraints).then(function(stream){
+        
         const localVideo = ThisPage.getAppUse('local-video');
+        console.log('got video stream',typeof(stream))
+        
         if (localVideo) {
           localVideo.srcObject = stream;
         }
         var tmpFPS = 30;
         processor.doLoad(localVideo, { frameDelayMS: 1000 / tmpFPS });
+
+//---> DO BELOW to send stream, but no audio
+//ToDo: Send canvas but audio from selected device???
+
         // var tmpCanvasSteam = processor.c2.captureStream();
         // tmpCanvasSteam.getTracks().forEach(
         //   track => {
@@ -338,11 +318,8 @@ actions.selectVideoSource = selectVideoSource;
        
 
       stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
-      },
-      error => {
-        console.warn(error.message);
-      }
-    );
+      
+      });
 
     //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
   }
