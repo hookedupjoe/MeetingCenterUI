@@ -16,10 +16,15 @@
       <b><span pagespot="your-disp-name" class="ui bolder"></span>, you are on the list.  Select the type of audio / video to use.</b>
     </div>
 
-    <div class="ui button blue basic" pageaction="refreshMediaSources">
-      Show Available Cameras
+    <div class="ui button blue basic" type="video" pageaction="refreshVideoSources">
+      Show Cameras
+    </div>
+    <div class="ui button blue basic" type="video" pageaction="refreshAudioSources">
+      Show Microphones
     </div>
     <div pagespot="video-sources"></div>
+    <div pagespot="audio-sources"></div>
+    <div pagespot="device-in-use"></div>
 
 
     <audio appuse="local-audio"></audio>

@@ -71,10 +71,37 @@ ThisPage.liveIndicator = ThisPage.getByAttr$({appuse:"live-indicator"});
 ThisPage.mediaInfo = {};
 
 ThisPage.localVideo = ThisPage.getAppUse('local-video');
-ThisPage.localVideo.addEventListener("play", (event) => {
+ThisPage.localVideo.addEventListener("canplay", (event) => {
   ThisPage.localVideoPlaying = true;
-  refreshUI()
+  ThisPage.closeAudio();
+  
 })
+
+ThisPage.closeAudio = function(){
+  if( ThisPage.localAudio.srcObject ){
+    var tmpTracks = ThisPage.localAudio.srcObject.getTracks();
+    tmpTracks.forEach(track => track.stop());
+  }
+  ThisPage.localAudioPlaying = false;
+  refreshUI();
+}
+
+ThisPage.closeVideo = function(){
+  if( ThisPage.localVideo.srcObject ){
+    var tmpTracks = ThisPage.localVideo.srcObject.getTracks();
+    tmpTracks.forEach(track => track.stop());
+  }
+  ThisPage.localVideoPlaying = false;
+  refreshUI()
+}
+
+ThisPage.localAudio = ThisPage.getAppUse('local-audio');
+console.log('ThisPage.localAudio',ThisPage.localAudio);
+ThisPage.localAudio.addEventListener("canplay", (event) => {
+  ThisPage.localAudioPlaying = true;
+  ThisPage.closeVideo();
+})
+
 
 //ThisPage.parts.welcome.subscribe('sendChat', onSendChat)
 
@@ -316,60 +343,76 @@ actions.selectVideoSource = selectVideoSource;
     //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
   }
 
-actions.refreshMediaSources = refreshMediaSources;
-function refreshMediaSources() {
-  console.log('refreshMediaSources req')
+// actions.refreshMediaSources = refreshMediaSources;
+// function refreshMediaSources() {
+//   console.log('refreshMediaSources req')
+//   promptForCamera();
+//   refreshMediaSourcesFromSystem()
+//   //ThisPage.parts.welcome.refreshMediaSources();
+// }
+
+actions.refreshVideoSources = refreshVideoSources;
+function refreshVideoSources() {
+  ThisPage.sourceSelection = 'video';
   promptForCamera();
   refreshMediaSourcesFromSystem()
-  //ThisPage.parts.welcome.refreshMediaSources();
+}
+
+actions.refreshAudioSources = refreshAudioSources;
+function refreshAudioSources() {
+  ThisPage.sourceSelection = 'audio';
+  promptForMic();
+  refreshMediaSourcesFromSystem()
 }
 
 function refreshMediaSourceLists(){
+  if( ThisPage.sourceSelection == 'audio' ){
+    refreshAudioMediaSources();
+    ThisPage.loadSpot('video-sources', '');
+  } else {
+    refreshVideoMediaSources();  
+    ThisPage.loadSpot('audio-sources', '');
+  }
   
-//  refreshAudioMediaSources();
-  refreshVideoMediaSources();
 }
 
-// function refreshAudioMediaSources() {
+function refreshAudioMediaSources() {
 
-//   var tmpDevices = ThisPage.mediaInfo.devices;
+  var tmpDevices = ThisPage.mediaInfo.devices;
 
-//   var tmpHTML = ['<div class="ui vertical menu fluid">'];
+  var tmpHTML = ['<div class="ui vertical menu fluid">'];
 
-//   var tmpFoundOne = false;
+  var tmpFoundOne = false;
 
-//   const tmpAudioDevices = tmpDevices.filter(device => device.kind == 'audioinput');
+  const tmpAudioDevices = tmpDevices.filter(device => device.kind == 'audioinput');
 
-//   tmpAudioDevices.map(theDevice => {
-//     var tmpLabel = theDevice.label || "(unknown)";
-//     if (!tmpFoundOne && theDevice.label) {
-//       tmpFoundOne = true;
-//     }
+  tmpAudioDevices.map(theDevice => {
+    var tmpLabel = theDevice.label || "(unknown)";
+    if (!tmpFoundOne && theDevice.label) {
+      tmpFoundOne = true;
+    }
 
-//     //--- Add list item with pageaction to tell audio motion to use the selected the deviceId
-//     var tmpDeviceId = theDevice.deviceId;
-//     tmpHTML.push(`<div class="item active" pageaction="selectAudioSource" deviceId="${theDevice.deviceId}" label="${tmpLabel}">
-//       <div class="content">
-//       <div class="header" style="line-height: 25px;">
-//       <i class="icon microphone blue"></i> ${tmpLabel}
-//       </div>
-//       </div>
-//       </div>`);
-//   });
-//   tmpHTML.push('</div>');
+    //--- Add list item with pageaction to tell audio motion to use the selected the deviceId
+    var tmpDeviceId = theDevice.deviceId;
+    tmpHTML.push(`<div class="item active" pageaction="selectAudioSource" deviceId="${theDevice.deviceId}" label="${tmpLabel}">
+      <div class="content">
+      <div class="header" style="line-height: 25px;">
+      <i class="icon microphone blue"></i> ${tmpLabel}
+      </div>
+      </div>
+      </div>`);
+  });
+  tmpHTML.push('</div>');
 
-//   if (tmpFoundOne) {
-//     ThisPage.loadSpot('audio-sources', tmpHTML.join('\n'));
-//   } else {
-//     ThisPage.loadSpot('audio-sources', '<div class="mar5"></div><div class="ui message orange mar5">Once you have given permission, press the <b>Refresh Source List</b> to see audio sources.</div>');
+  
+  if (tmpFoundOne) {
+    ThisPage.loadSpot('audio-sources', tmpHTML.join('\n'));
+  } else {
+    ThisPage.loadSpot('audio-sources', '<div class="mar5"></div><div class="ui message orange mar5">Once you have given permission, press the <b>Show Microphones</b> button again.</div>');
+    ThisPage.promptForMic();
+  }
 
-//     //--- Trigger media access to prompt for permission
-//     navigator.getUserMedia({
-//       audio: true, video: false
-//     }, function () {}, function () {})
-//   }
-
-// }
+}
 
 
 
@@ -416,10 +459,39 @@ function refreshVideoMediaSources() {
 
 function refreshUI() {
   console.log( 'ThisPage.localVideoPlaying', ThisPage.localVideoPlaying);
+  console.log( 'ThisPage.localAudioPlaying', ThisPage.localAudioPlaying);
   
-  if( ThisPage.localVideoPlaying ){
-    ThisPage.loadSpot('video-sources','')
+  
+  if( ThisPage.localVideoPlaying || ThisPage.localAudioPlaying ){
+    ThisPage.loadSpot('video-sources','');
+    ThisPage.loadSpot('audio-sources','');
+    
+    var tmpBtnText = 'Stop Using '
+    var tmpBtnAction = ''
+    var tmpMsgText = 'Using ';
+    ThisPage.closeAudio
+    if( ThisPage.localVideoPlaying  ){
+      tmpBtnText += "Camera"
+      tmpBtnAction = 'closeVideo'
+      tmpMsgText += 'Camera';
+    } else {
+      tmpBtnText += "Microphone"
+      tmpBtnAction = 'closeAudio'
+      tmpMsgText += 'Microphone';
+    }
+    
+    var tmpBtn = '<div class="ui button blue small compact" pageaction="' + tmpBtnAction + '">' + tmpBtnText + '</div>';
+    var tmpHdr = '<div class="ui header blue small">' + tmpMsgText + '</div>';
+    ThisPage.loadSpot('device-in-use',tmpHdr + tmpBtn);
+
+  } else {
+    ThisPage.loadSpot('device-in-use','<div class="ui message blue small">Select an Audio/Video Device</div>')  
   }
+  
+  
+  
+  
+  
   
   ThisPage.loadSpot('your-disp-name', ThisPage.stage.profile.name);
   var tmpName = ThisPage.stage.profile.name;
