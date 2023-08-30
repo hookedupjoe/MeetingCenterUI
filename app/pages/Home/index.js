@@ -246,36 +246,52 @@ function selectAudioSource(theParams, theTarget) {
 }
 
 actions.selectVideoSource = selectVideoSource;
-function selectVideoSource(theParams, theTarget) {
-  var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
-  
-  
-  ThisApp.currentVideoDeviceID = tmpParams.deviceId;
-  
-  var tmpConstraints = { video: {deviceId: {
-      exact: [ThisApp.currentVideoDeviceID]
-    }}, audio: true};
+  function selectVideoSource(theParams, theTarget) {
+    var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
 
 
-  
-  navigator.getUserMedia(
-    tmpConstraints,
-    stream => {
-      const localVideo = ThisPage.getAppUse('local-video');
-      if (localVideo) {
-        localVideo.srcObject = stream;
+    ThisApp.currentVideoDeviceID = tmpParams.deviceId;
+
+    var tmpConstraints = {
+      video: {
+        deviceId: {
+          exact: [ThisApp.currentVideoDeviceID]
+        }
+      }, audio: true
+    };
+
+
+
+    navigator.getUserMedia(
+      tmpConstraints,
+      stream => {
+        const localVideo = ThisPage.getAppUse('local-video');
+        if (localVideo) {
+          localVideo.srcObject = stream;
+        }
+        var tmpFPS = 30;
+        processor.doLoad(localVideo, { frameDelayMS: 1000 / tmpFPS });
+        var tmpCanvasSteam = processor.c2.captureStream();
+        tmpCanvasSteam.getTracks().forEach(
+          track => {
+            ThisPage.activePeer.addTrack(
+              track,
+              tmpCanvasSteam
+            );
+          }
+        );
+
+       
+
+        //stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
+      },
+      error => {
+        console.warn(error.message);
       }
-      console.log('doload');
-      processor.doLoad(localVideo);
-    stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
-    },
-    error => {
-      console.warn(error.message);
-    }
-  );
-  
-  //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
-}
+    );
+
+    //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
+  }
 
 actions.refreshMediaSources = refreshMediaSources;
 function refreshMediaSources() {
@@ -491,15 +507,17 @@ let processor = {
     let self = this;
     setTimeout(function () {
         self.timerCallback();
-      }, 0);
+      }, self.frameDelayMS);
   },
 
   snapshot: function(theType){
     this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
     this.initialSnapshot = this.ctx1.getImageData(0, 0, this.width, this.height);
   },
-  doLoad: function(theVideoEl) {
+  doLoad: function(theVideoEl, theOptions) {
+    this.options = theOptions || {};
     this.video = theVideoEl;
+    this.frameDelayMS = this.options.frameDelayMS || 20;
     
     this.c1 = document.getElementById("c1");
     this.ctx1 = this.c1.getContext("2d",{willReadFrequently: true});
@@ -556,16 +574,17 @@ let processor = {
 
   computeFrame: function() {
 
-
+    
     this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
     let frame = this.ctx1.getImageData(0, 0, this.width, this.height);
-        let l = frame.data.length / 4;
+    
+    let l = frame.data.length / 4;
 
-        this.snapat++;
-        if( this.snapat >= this.snapwhen){
-          this.snapat = 0;
-          this.snapshot();
-        }
+    this.snapat++;
+    if( this.snapat >= this.snapwhen){
+      this.snapat = 0;
+      this.snapshot();
+    }
 
     for (let i = 0; i < l; i++) {
       let r = frame.data[i * 4 + 0];
@@ -585,15 +604,17 @@ let processor = {
       var inCutout = false;
       if( this.ctx3Data ){
         let rbc = this.ctx3Data.data[i * 4 + 0];
-        //let gbc = this.ctx3Data.data[i * 4 + 1];
-        //let bbc = this.ctx3Data.data[i * 4 + 2];
+        //--- unlessneeded--> let gbc = this.ctx3Data.data[i * 4 + 1];
+        //--- unlessneeded--> let bbc = this.ctx3Data.data[i * 4 + 2];
         if( !(rbc > 100 ) ){
           inCutout = true;
         }
       }
 
-      //show diff .. add this => || inRange
-      if ( inCutout || ( inRange && this.showdiff === true) ){
+      this.showdiff = true;
+      //--- show diff .. add this => || inRange
+      //inCutout ||   
+      if ( ( inRange && this.showdiff === true) ){
         frame.data[i * 4 + 3] = 0;        
       }
         
