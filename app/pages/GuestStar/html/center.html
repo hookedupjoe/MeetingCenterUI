@@ -11,15 +11,33 @@
 
 
 
-  <div appuse="cards" group="profilestatus" item="backstage" class="hidden ui message medium green xhidden">
-    <b><span pagespot="your-disp-name" class="ui bolder"></span>, you are on the list.  Select the type of audio / video to use.</b>
+  <div appuse="cards" group="profilestatus" item="backstage" class="hidden">
+    <div class="ui message medium green">
+      <b><span pagespot="your-disp-name" class="ui bolder"></span>, you are on the list.  Select the type of audio / video to use.</b>      
+    </div>
+    
+  <div class="ui button blue basic" pageaction="refreshMediaSources">
+    Show Available Cameras
+  </div>
+    <div pagespot="video-sources"></div>
 
-    <div class="ui button blue small compact" pageaction="videoSetup">
-      Video Setup
+  <div class="ui message">
+    Click a video source below, it will show in the window above.  That is what the other person will see in the meeting.
+    <br />
+    Note: You can join and view without sharing video or audio.
+  </div>
+
+  
+    <audio appuse="local-audio"></audio>
+
+    <div>
+      <canvas style="display:none;width:auto;height:auto;" id="c1" width="640" height="480"></canvas>
+      <canvas style="width:99%;height:auto;" id="c2" width="640" height="480"></canvas>
+      <canvas class="hidden" style="max-width:320px;width:99%;height:auto;background-repeat: no-repeat;" id="c3" width="640" height="480"></canvas>
     </div>
-    <div class="ui button blue small compact" pageaction="videoSetup">
-      Audio
-    </div>
+
+
+  <video style="width:0%;height:auto;border:none;" autoplay="" muted="" appuse="local-video"></video>
 
 
 
@@ -43,70 +61,31 @@
 
 </div>
 
-<div appuse="cards" group="meetingstatus" item="inmeeting" class="mar3 hidden">
-
-  <div class="ui header large blue center aligned">
-    Meeting Center
-    <div appuse="live-indicator" class="toright hidden" style="background-color:red;color:white;border:solid 3px black">LIVE</div>
-  </div>
-
-    <div class="pad3"></div>
-    
-    <audio autoplay appuse="remote-audio"></audio>
-    <video style="width:100%;height:auto;border:solid 2px #ccc;" autoplay class="remote-video" appuse="remote-video"></video>
-
-    <canvas style="width:99%;height:auto;background-repeat: no-repeat;" appuse="remote-canvas" width="640" height="480"></canvas>
-
-
-</div>
-
 <div appuse="cards" group="meetingstatus" item="premeeting" class="mar3  hidden">
 
 
-  <div class="ui button blue basic" pageaction="refreshMediaSources">
-    Refresh Audio/Video Sources
-  </div>
-  <div class="ui message">
-    Click a video source below, it will show in the window above.  That is what the other person will see in the meeting.
-    <br />
-    Note: You can join and view without sharing video or audio.
-  </div>
+
+</div>
 
 
-  <div class="ui nothidden">
-    <div class="ui segment attached basic pad0 mar0">
-      <div class="mar0 pad0 ui top attached tabular menu">
-        <a appuse="tablinks" group="inputtabs" item="maintab1" pageaction="showSubPage" class="item blue active ">Video</a>
-        <a appuse="tablinks" group="inputtabs" item="maintab2" pageaction="showSubPage" class="item blue">Audio</a>
-      </div>
-      <div class=" ui  bottom attached slim blue segment   ">
-        <div appuse="cards" group="inputtabs" item="maintab1" class="pad0 ">
+<div appuse="cards" group="meetingstatus" item="inmeeting" class="mar3 nothidden">
 
-          <div pagespot="video-sources"></div>
-        </div>
-        <div appuse="cards" group="inputtabs" item="maintab2" class="pad0  hidden ">
-
-          <div pagespot="audio-sources"></div>
-
-        </div>
-      </div>
-
+  <div class="ui header large blue center aligned">
+    Meeting Center
+    <div appuse="live-indicator" class="toright hidden" style="background-color:red;color:white;border:solid 3px black">
+      LIVE
     </div>
   </div>
 
-  <div appuse="cards" group="toptabs" item="maintab2" class="pad0 hidden">
-    <audio appuse="local-audio"></audio>
+  <div class="pad3"></div>
 
-    <div>
-      <canvas style="display:none;width:auto;height:auto;" id="c1" width="640" height="480"></canvas>
-      <canvas style="width:99%;height:auto;" id="c2" width="640" height="480"></canvas>
-      <canvas class="hidden" style="width:99%;height:auto;background-repeat: no-repeat;" id="c3" width="640" height="480"></canvas>
-    </div>
+  <audio autoplay appuse="remote-audio"></audio>
+  
 
-  </div>
-
-
-  <video style="width:0%;height:auto;border:none;" autoplay="" muted="" appuse="local-video"></video>
 
 
 </div>
+
+  <canvas style="width:99%;height:auto;background-repeat: no-repeat;" appuse="remote-canvas" width="640" height="480"></canvas>
+
+<video style="width:100%;height:auto;border:solid 2px #ccc;" autoplay class="remote-video" appuse="remote-video"></video>

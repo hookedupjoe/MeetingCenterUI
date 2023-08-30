@@ -18,7 +18,7 @@ var thisPageSpecs = {
     //~layoutOptions//~
 thisPageSpecs.layoutOptions = {
         baseURL: pageBaseURL,
-        north: false,
+        north: { html: "header" },
         east: false,
         west: false,
         center: { html: "center" },
@@ -222,6 +222,20 @@ function promptForCamera(){
 
 }
 
+function promptForMic(){
+  
+  navigator.getUserMedia(
+  { video: false, audio: true },
+  stream => {
+      //--- Do nothing, just validating / prompting for cameral use
+  },
+  error => {
+    console.warn(error.message);
+  }
+);
+
+}
+
 actions.selectAudioSource = selectAudioSource;
 function selectAudioSource(theParams, theTarget) {
   var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
@@ -300,70 +314,72 @@ actions.selectVideoSource = selectVideoSource;
 actions.refreshMediaSources = refreshMediaSources;
 function refreshMediaSources() {
   console.log('refreshMediaSources req')
-  //promptForCamera();
-  
+  promptForCamera();
+  refreshMediaSourcesFromSystem()
   //ThisPage.parts.welcome.refreshMediaSources();
 }
 
 function refreshMediaSourceLists(){
   
-  refreshAudioMediaSources();
+//  refreshAudioMediaSources();
   refreshVideoMediaSources();
 }
 
-function refreshAudioMediaSources() {
+// function refreshAudioMediaSources() {
 
-  var tmpDevices = ThisPage.mediaInfo.devices;
+//   var tmpDevices = ThisPage.mediaInfo.devices;
 
-  var tmpHTML = ['<div class="ui vertical menu fluid">'];
+//   var tmpHTML = ['<div class="ui vertical menu fluid">'];
 
-  var tmpFoundOne = false;
+//   var tmpFoundOne = false;
 
-  const tmpAudioDevices = tmpDevices.filter(device => device.kind == 'audioinput');
+//   const tmpAudioDevices = tmpDevices.filter(device => device.kind == 'audioinput');
 
-  tmpAudioDevices.map(theDevice => {
-    var tmpLabel = theDevice.label || "(unknown)";
-    if (!tmpFoundOne && theDevice.label) {
-      tmpFoundOne = true;
-    }
+//   tmpAudioDevices.map(theDevice => {
+//     var tmpLabel = theDevice.label || "(unknown)";
+//     if (!tmpFoundOne && theDevice.label) {
+//       tmpFoundOne = true;
+//     }
 
-    //--- Add list item with pageaction to tell audio motion to use the selected the deviceId
-    var tmpDeviceId = theDevice.deviceId;
-    tmpHTML.push(`<div class="item active" pageaction="selectAudioSource" deviceId="${theDevice.deviceId}" label="${tmpLabel}">
-      <div class="content">
-      <div class="header" style="line-height: 25px;">
-      <i class="icon microphone blue"></i> ${tmpLabel}
-      </div>
-      </div>
-      </div>`);
-  });
-  tmpHTML.push('</div>');
+//     //--- Add list item with pageaction to tell audio motion to use the selected the deviceId
+//     var tmpDeviceId = theDevice.deviceId;
+//     tmpHTML.push(`<div class="item active" pageaction="selectAudioSource" deviceId="${theDevice.deviceId}" label="${tmpLabel}">
+//       <div class="content">
+//       <div class="header" style="line-height: 25px;">
+//       <i class="icon microphone blue"></i> ${tmpLabel}
+//       </div>
+//       </div>
+//       </div>`);
+//   });
+//   tmpHTML.push('</div>');
 
-  if (tmpFoundOne) {
-    ThisPage.loadSpot('audio-sources', tmpHTML.join('\n'));
-  } else {
-    ThisPage.loadSpot('audio-sources', '<div class="mar5"></div><div class="ui message orange mar5">Once you have given permission, press the <b>Refresh Source List</b> to see audio sources.</div>');
+//   if (tmpFoundOne) {
+//     ThisPage.loadSpot('audio-sources', tmpHTML.join('\n'));
+//   } else {
+//     ThisPage.loadSpot('audio-sources', '<div class="mar5"></div><div class="ui message orange mar5">Once you have given permission, press the <b>Refresh Source List</b> to see audio sources.</div>');
 
-    //--- Trigger media access to prompt for permission
-    navigator.getUserMedia({
-      audio: true, video: false
-    }, function () {}, function () {})
-  }
+//     //--- Trigger media access to prompt for permission
+//     navigator.getUserMedia({
+//       audio: true, video: false
+//     }, function () {}, function () {})
+//   }
 
-}
-
+// }
 
 
 
 function refreshVideoMediaSources() {
 
+
   var tmpDevices = ThisPage.mediaInfo.devices;
+  console.log('ThisPage.mediaInfo.devices',ThisPage.mediaInfo.devices);
 
   var tmpHTML = ['<div class="ui vertical menu fluid">'];
 
   var tmpFoundOne = false;
 
   const tmpAudioDevices = tmpDevices.filter(device => device.kind == 'videoinput');
+
 
   tmpAudioDevices.map(theDevice => {
     var tmpLabel = theDevice.label || "(unknown)";
@@ -386,12 +402,8 @@ function refreshVideoMediaSources() {
   if (tmpFoundOne) {
     ThisPage.loadSpot('video-sources', tmpHTML.join('\n'));
   } else {
-    ThisPage.loadSpot('video-sources', '<div class="mar5"></div><div class="ui message orange mar5">Once you have given permission, press the <b>Refresh Source List</b> to see audio sources.</div>');
-
-    //--- Trigger media access to prompt for permission
-    navigator.getUserMedia({
-      audio: true, video: false
-    }, function () {}, function () {})
+    ThisPage.loadSpot('video-sources', '<div class="mar5"></div><div class="ui message orange mar5">Once you have given permission, press the <b>Show Cameras</b> button again.</div>');
+    promptForCamera();
   }
 
 }
@@ -504,7 +516,152 @@ function requestMeeting(theParams, theTarget) {
 }
 
 
+
 let processor = {
+  timerCallback: function() {
+    if (this.video.paused || this.video.ended) {
+      return;
+    }
+    this.computeFrame();
+    let self = this;
+    setTimeout(function () {
+        self.timerCallback();
+      }, self.frameDelayMS);
+  },
+
+  snapshot: function(theType){
+    this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
+    this.initialSnapshot = this.ctx1.getImageData(0, 0, this.width, this.height);
+  },
+  doLoad: function(theVideoEl, theOptions) {
+    this.options = theOptions || {};
+    this.video = theVideoEl;
+    this.frameDelayMS = this.options.frameDelayMS || 20;
+    
+    this.c1 = document.getElementById("c1");
+    this.ctx1 = this.c1.getContext("2d",{willReadFrequently: true});
+    this.c2 = document.getElementById("c2");
+    this.ctx2 = this.c2.getContext("2d",{willReadFrequently: true});
+    this.c3 = document.getElementById("c3");
+    this.ctx3 = this.c3.getContext("2d",{willReadFrequently: true});
+    
+    this.showDiff = false;
+    this.showCutout = false;
+
+    var self = this;
+
+    const image = new Image();
+    image.src = "./res/cutout.png";
+
+    // this.cutoutEl = ThisPage.getByAttr$({appuse: 'cutout'}).get(0);
+    // this.cutoutCtx = this.cutoutEl.getContext("2d");
+
+    
+    self.width = self.video.videoWidth || 640;
+    self.height = self.video.videoHeight || 480;
+
+
+
+
+
+    self.r = 0;
+    self.g = 100;
+    self.b = 150;
+
+    self.br = 30;
+    self.bg = 30;
+    self.bb = 30;
+    self.snapshot();
+
+    
+    self.snapwhen = 7;
+    self.snapat = 0;
+
+    self.ctx3Data = false;
+    image.addEventListener("load", () => {
+      self.ctx3.drawImage(image, 0, 0, self.width, self.height);
+      self.ctx3Data = self.ctx3.getImageData(0, 0, self.width, self.height);
+
+      self.video.addEventListener("play", function() {
+        // self.width = self.video.videoWidth ;
+        // self.height = self.video.videoHeight;
+        self.timerCallback();
+      }, false);
+
+    });
+
+
+    
+  },
+
+  computeFrame: function() {
+
+    
+    this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
+    let frame = this.ctx1.getImageData(0, 0, this.width, this.height);
+    
+    let l = frame.data.length / 4;
+
+    this.snapat++;
+    if( this.snapat >= this.snapwhen){
+      this.snapat = 0;
+      this.snapshot();
+    }
+
+    for (let i = 0; i < l; i++) {
+      let r = frame.data[i * 4 + 0];
+      let g = frame.data[i * 4 + 1];
+      let b = frame.data[i * 4 + 2];
+      let rc = this.initialSnapshot.data[i * 4 + 0];
+      let gc = this.initialSnapshot.data[i * 4 + 1];
+      let bc = this.initialSnapshot.data[i * 4 + 2];
+      
+      
+      
+      let rir = (r<rc+this.br) && (r>rc-this.br);
+      let gir = (g<gc+this.bg) && (g>gc-this.bg);
+      let bir = (b<bc+this.bb) && (b>bc-this.bb);
+      let inRange = ( rir && gir && bir );
+
+      var inCutout = false;
+      if( this.ctx3Data ){
+        let rbc = this.ctx3Data.data[i * 4 + 0];
+        //--- unlessneeded--> let gbc = this.ctx3Data.data[i * 4 + 1];
+        //--- unlessneeded--> let bbc = this.ctx3Data.data[i * 4 + 2];
+        if( !(rbc > 100 ) ){
+          inCutout = true;
+        }
+      }
+
+      //this.showdiff = true;
+      //--- show diff .. add this => || inRange
+      //inCutout ||   
+      //if ( ( inRange && this.showdiff === true) ){
+      
+      if( this.showDiff != true){
+        inRange = false;
+      }
+      if( this.showCutout != true){
+        inCutout = false;
+      }
+      if ( inCutout || inRange ){
+        frame.data[i * 4 + 3] = 0;        
+      }
+        
+    }
+    this.ctx2.putImageData(frame, 0, 0);
+    //  ToDo: USE STREAM OF CANVAS?
+    // if( ThisPage.activeDataChannel ){
+    //   ThisPage.activeDataChannel.send(frame)
+    // }
+    
+    return;
+  }
+};
+
+
+
+let processorDELETEME = {
   timerCallback: function() {
     if (this.video.paused || this.video.ended) {
       return;
@@ -656,9 +813,8 @@ function refreshPeople(thePeople) {
 function refreshMediaSourcesFromSystem() {
   var self = this;
   navigator.mediaDevices.enumerateDevices().then(function(theDevices){
-      self.mediaInfo = self.mediaInfo || {};
-      self.mediaInfo.devices = theDevices;
-      self.publish('NewMediaSources')
+      ThisPage.mediaInfo.devices = theDevices;
+      ThisPage.publish('NewMediaSources')
   });
 }
 
