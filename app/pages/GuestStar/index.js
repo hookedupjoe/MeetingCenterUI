@@ -65,10 +65,12 @@ thisPageSpecs.required = {
 window.ThisPageNow = ThisPage;
 
 ThisPage.processor = processor;
+ThisPage.mediaInfo = {};
 
 ThisPage.liveIndicator = ThisPage.getByAttr$({appuse:"live-indicator"});
+ThisPage.deviceSelection = ThisPage.getByAttr$({appuse:'device-selection'});
 
-ThisPage.mediaInfo = {};
+ThisPage.localCanvas = ThisPage.getByAttr$({appuse:'local-canvas'});
 
 ThisPage.localVideo = ThisPage.getAppUse('local-video');
 ThisPage.localVideo.addEventListener("canplay", (event) => {
@@ -468,24 +470,40 @@ function refreshUI() {
     
     var tmpBtnText = 'Stop Using '
     var tmpBtnAction = ''
-    var tmpMsgText = 'Using ';
+    var tmpMsgText = 'The ';
+    var tmpIcon = '';
     ThisPage.closeAudio
     if( ThisPage.localVideoPlaying  ){
       tmpBtnText += "Camera"
       tmpBtnAction = 'closeVideo'
       tmpMsgText += 'Camera';
+      tmpIcon = 'video';
+      ThisPage.localCanvas.removeClass('hidden');
     } else {
       tmpBtnText += "Microphone"
       tmpBtnAction = 'closeAudio'
       tmpMsgText += 'Microphone';
+      tmpIcon = 'microphone';
+      ThisPage.localCanvas.addClass('hidden');
     }
     
-    var tmpBtn = '<div class="ui button blue small compact" pageaction="' + tmpBtnAction + '">' + tmpBtnText + '</div>';
-    var tmpHdr = '<div class="ui header blue small">' + tmpMsgText + '</div>';
-    ThisPage.loadSpot('device-in-use',tmpHdr + tmpBtn);
+    ThisPage.deviceSelection.addClass('hidden');
+  
+
+    var tmpBtn = '<div class="ui button basic blue small compact" pageaction="' + tmpBtnAction + '">' + tmpBtnText + '</div>';
+    var tmpHdr = '<div class="ui label left pointing green large">' + tmpMsgText + ' is active</div>';
+    var tmpInUse = `<div class="pad8"><h2 class="ui header">
+      <i class="icon green huge ${tmpIcon}"></i>
+      <div class="content">
+        ${tmpHdr + tmpBtn}
+      </div>
+    </h2></div>`
+    ThisPage.loadSpot('device-in-use',tmpInUse);
 
   } else {
+    ThisPage.deviceSelection.removeClass('hidden');
     ThisPage.loadSpot('device-in-use','<div class="ui message blue small">Select an Audio/Video Device</div>')  
+    ThisPage.localCanvas.addClass('hidden');
   }
   
   
@@ -742,138 +760,6 @@ let processor = {
   }
 };
 
-
-
-let processorDELETEME = {
-  timerCallback: function() {
-    if (this.video.paused || this.video.ended) {
-      return;
-    }
-    this.computeFrame();
-    let self = this;
-    setTimeout(function () {
-        self.timerCallback();
-      }, self.frameDelayMS);
-  },
-
-  snapshot: function(theType){
-    this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
-    this.initialSnapshot = this.ctx1.getImageData(0, 0, this.width, this.height);
-  },
-  doLoad: function(theVideoEl, theOptions) {
-    this.options = theOptions || {};
-    this.video = theVideoEl;
-    this.frameDelayMS = this.options.frameDelayMS || 20;
-    
-    this.c1 = document.getElementById("c1");
-    this.ctx1 = this.c1.getContext("2d",{willReadFrequently: true});
-    this.c2 = document.getElementById("c2");
-    this.ctx2 = this.c2.getContext("2d",{willReadFrequently: true});
-    this.c3 = document.getElementById("c3");
-    this.ctx3 = this.c3.getContext("2d");
-    
-    var self = this;
-
-    const image = new Image();
-    image.src = "./res/cutout.png";
-
-    // this.cutoutEl = ThisPage.getByAttr$({appuse: 'cutout'}).get(0);
-    // this.cutoutCtx = this.cutoutEl.getContext("2d");
-
-    
-    self.width = self.video.videoWidth || 640;
-    self.height = self.video.videoHeight || 480;
-
-
-
-
-
-    self.r = 0;
-    self.g = 100;
-    self.b = 150;
-
-    self.br = 30;
-    self.bg = 30;
-    self.bb = 30;
-    self.snapshot();
-
-    
-    self.snapwhen = 7;
-    self.snapat = 0;
-
-    self.ctx3Data = false;
-    image.addEventListener("load", () => {
-      self.ctx3.drawImage(image, 0, 0, self.width, self.height);
-      self.ctx3Data = self.ctx3.getImageData(0, 0, self.width, self.height);
-
-      self.video.addEventListener("play", function() {
-        // self.width = self.video.videoWidth ;
-        // self.height = self.video.videoHeight;
-        self.timerCallback();
-      }, false);
-
-    });
-
-
-    
-  },
-
-  computeFrame: function() {
-
-    
-    this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
-    let frame = this.ctx1.getImageData(0, 0, this.width, this.height);
-    
-    let l = frame.data.length / 4;
-
-    this.snapat++;
-    if( this.snapat >= this.snapwhen){
-      this.snapat = 0;
-      this.snapshot();
-    }
-
-    for (let i = 0; i < l; i++) {
-      let r = frame.data[i * 4 + 0];
-      let g = frame.data[i * 4 + 1];
-      let b = frame.data[i * 4 + 2];
-      let rc = this.initialSnapshot.data[i * 4 + 0];
-      let gc = this.initialSnapshot.data[i * 4 + 1];
-      let bc = this.initialSnapshot.data[i * 4 + 2];
-      
-      
-      
-      let rir = (r<rc+this.br) && (r>rc-this.br);
-      let gir = (g<gc+this.bg) && (g>gc-this.bg);
-      let bir = (b<bc+this.bb) && (b>bc-this.bb);
-      let inRange = ( rir && gir && bir );
-
-      var inCutout = false;
-      if( this.ctx3Data ){
-        let rbc = this.ctx3Data.data[i * 4 + 0];
-        //--- unlessneeded--> let gbc = this.ctx3Data.data[i * 4 + 1];
-        //--- unlessneeded--> let bbc = this.ctx3Data.data[i * 4 + 2];
-        if( !(rbc > 100 ) ){
-          inCutout = true;
-        }
-      }
-
-      this.showdiff = true;
-      //--- show diff .. add this => || inRange
-      //inCutout ||   
-      if ( ( inRange && this.showdiff === true) ){
-        frame.data[i * 4 + 3] = 0;        
-      }
-        
-    }
-    this.ctx2.putImageData(frame, 0, 0);
-    //  ToDo: USE STREAM OF CANVAS?
-    // if( ThisPage.activeDataChannel ){
-    //   ThisPage.activeDataChannel.send(frame)
-    // }
-    
-    return;
-  }
-};
 
 
 actions.sendProfile = sendProfile;

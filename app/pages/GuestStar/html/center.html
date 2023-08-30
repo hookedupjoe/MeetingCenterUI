@@ -15,17 +15,23 @@
     <div class="ui message medium green">
       <b><span pagespot="your-disp-name" class="ui bolder"></span>, you are on the list.  Select the type of audio / video to use.</b>
     </div>
+    <div appuse="device-selection">
+      <div class="ui button blue basic" type="video" pageaction="refreshVideoSources">
+        Show Cameras
+      </div>
+      <div class="ui button blue basic" type="video" pageaction="refreshAudioSources">
+        Show Microphones
+      </div>
 
-    <div class="ui button blue basic" type="video" pageaction="refreshVideoSources">
-      Show Cameras
+      <div pagespot="video-sources"></div>
+      <div pagespot="audio-sources"></div>
+      <div class="ui pad5"></div>
+
     </div>
-    <div class="ui button blue basic" type="video" pageaction="refreshAudioSources">
-      Show Microphones
-    </div>
-    <div pagespot="video-sources"></div>
-    <div pagespot="audio-sources"></div>
+
+
     <div pagespot="device-in-use"></div>
-
+<canvas class="hidden" style="max-width:100px;height:auto;" id="c2" appuse="local-canvas" width="640" height="480"></canvas>
 
     <audio appuse="local-audio"></audio>
 
@@ -64,7 +70,7 @@
 <div appuse="cards" group="meetingstatus" item="inmeeting" class="mar3 nothidden">
 
   <div class="ui header large blue center aligned">
-    Meeting Center
+    Visitor
     <div appuse="live-indicator" class="toright hidden" style="background-color:red;color:white;border:solid 3px black">
       LIVE
     </div>
