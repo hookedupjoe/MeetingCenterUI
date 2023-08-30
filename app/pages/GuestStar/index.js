@@ -236,9 +236,8 @@ refreshUI();
 
     //------- --------  --------  --------  --------  --------  --------  -------- 
     //~YourPageCode//~
-navigator.getUserMedia = ( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.mediaDevices.getUserMedia);
-
-
+ThisApp.navigator = navigator.mediaDevices || navigator;
+    
 var sendChannel;
 
 ThisPage.getAppUse = function(theUse){
@@ -247,7 +246,7 @@ ThisPage.getAppUse = function(theUse){
 
 function promptForCamera(){
   
-  navigator.getUserMedia(
+  ThisApp.navigator.getUserMedia(
   { video: true, audio: true },
   stream => {
       //--- Do nothing, just validating / prompting for cameral use
@@ -261,7 +260,7 @@ function promptForCamera(){
 
 function promptForMic(){
   
-  navigator.getUserMedia(
+  ThisApp.navigator.getUserMedia(
   { video: false, audio: true },
   stream => {
       //--- Do nothing, just validating / prompting for cameral use
@@ -283,7 +282,7 @@ function selectAudioSource(theParams, theTarget) {
     }};
   
         
-  navigator.getUserMedia(
+  ThisApp.navigator.getUserMedia(
     tmpConstraints,
     stream => {
       const localSource = ThisPage.getAppUse('local-audio');
@@ -317,7 +316,7 @@ actions.selectVideoSource = selectVideoSource;
 
 
 
-    navigator.getUserMedia(
+    ThisApp.navigator.getUserMedia(
       tmpConstraints,
       stream => {
         const localVideo = ThisPage.getAppUse('local-video');
