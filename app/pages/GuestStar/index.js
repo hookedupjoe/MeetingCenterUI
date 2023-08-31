@@ -238,8 +238,7 @@ refreshUI();
 
     //------- --------  --------  --------  --------  --------  --------  -------- 
     //~YourPageCode//~
-ThisApp.navigator = navigator;
-
+ThisApp.navigator = navigator.mediaDevices;
 
 var sendChannel;
 
@@ -252,17 +251,17 @@ ThisPage.getAppUse = function(theUse) {
 function promptForCamera() {
   ThisApp.navigator.getUserMedia({
     video: true, audio: true
-  },function(stream) {
+  }).then(function(stream) {
     refreshUI();
-  },connectError)//.then();
+  },connectError);
 }
 
 function promptForMic() {
   ThisApp.navigator.getUserMedia({
     video: false, audio: true
-  },function(stream) {
+  }).then(function(stream) {
     refreshUI();
-  },connectError)//.then();
+  },connectError);
 }
 
 actions.selectAudioSource = selectAudioSource;
@@ -279,13 +278,14 @@ function selectAudioSource(theParams, theTarget) {
 
 
 
-  ThisApp.navigator.getUserMedia(tmpConstraints,function(stream) {
+  ThisApp.navigator.getUserMedia(tmpConstraints).then(
+    function(stream) {
       const localSource = ThisPage.getAppUse('local-audio');
       if (localSource) {
         localSource.srcObject = stream;
       }
       stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
-    },connectError);//.then();
+    },connectError);
 }
 
 function connectError(theError) {
@@ -316,7 +316,7 @@ function selectVideoSource(theParams, theTarget) {
 
 
 
-  ThisApp.navigator.getUserMedia(tmpConstraints,function(stream) {
+  ThisApp.navigator.getUserMedia(tmpConstraints).then(function(stream) {
 
     const localVideo = ThisPage.getAppUse('local-video');
     console.log('got video stream', typeof(stream))
@@ -347,7 +347,7 @@ function selectVideoSource(theParams, theTarget) {
     console.log("Adding tracks to remote peer", stream.getTracks())
     stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
 
-  },connectError)//.then();
+  },connectError);
 
   //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
 }

@@ -204,17 +204,31 @@ ThisPage.getAppUse = function(theUse){
   return ThisPage.getByAttr$({appuse: theUse}).get(0);
 }
 
-function promptForCamera(){
-  
-  navigator.getUserMedia(
-  { video: true, audio: true },
-  stream => {
-      //--- Do nothing, just validating / prompting for cameral use
-  },
-  error => {
-    console.warn(error.message);
+function promptForCamera() {
+  navigator.mediaDevices.getUserMedia({
+    video: true, audio: true
+  }).then(function(stream) {
+    refreshUI();
+  },connectError);
+}
+
+function promptForMic() {
+  navigator.mediaDevices.getUserMedia({
+    video: false, audio: true
+  }).then(function(stream) {
+    refreshUI();
+  },connectError);
+}
+
+
+function connectError(theError) {
+  if (theError && theError.message) {
+    alert(theError.message, "Can not connect", "e")
+  } else {
+    console.error("Can't connect", arguments);
+    alert('Device is most likely in use', "Can not connect", "e")
   }
-);
+
 
 }
 
@@ -223,76 +237,155 @@ function selectAudioSource(theParams, theTarget) {
   var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
   ThisApp.currentAudioDeviceID = tmpParams.deviceId;
 
-  var tmpConstraints = { video: false, audio: true, deviceId: {
+  var tmpConstraints = {
+    video: false,
+    audio: true,
+    deviceId: {
       exact: [ThisApp.currentAudioDeviceID]
     }};
-  
-        
-  navigator.getUserMedia(
-    tmpConstraints,
-    stream => {
+
+
+
+  navigator.mediaDevices.getUserMedia(tmpConstraints).then(
+    function(stream) {
       const localSource = ThisPage.getAppUse('local-audio');
       if (localSource) {
         localSource.srcObject = stream;
       }
       stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
+    },connectError);
+}
+
+actions.selectVideoSource = selectVideoSource;
+function selectVideoSource(theParams, theTarget) {
+  var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
+
+
+  ThisApp.currentVideoDeviceID = tmpParams.deviceId;
+
+  var tmpConstraints = {
+    video: {
+      deviceId: {
+        exact: [ThisApp.currentVideoDeviceID]
+      }
     },
-    error => {
-      console.warn(error.message);
+    audio: true
+  };
+
+
+
+  navigator.mediaDevices.getUserMedia(tmpConstraints).then(function(stream) {
+
+    const localVideo = ThisPage.getAppUse('local-video');
+    console.log('got video stream', typeof(stream))
+
+    if (localVideo) {
+      localVideo.srcObject = stream;
     }
-  );
+    var tmpFPS = 30;
+    processor.doLoad(localVideo, {
+      frameDelayMS: 1000 / tmpFPS
+    });
+
+    //---> DO BELOW to send stream, but no audio
+    //ToDo: Send canvas but audio from selected device???
+
+    // var tmpCanvasSteam = processor.c2.captureStream();
+    // tmpCanvasSteam.getTracks().forEach(
+    //   track => {
+    //     ThisPage.activePeer.addTrack(
+    //       track,
+    //       tmpCanvasSteam
+    //     );
+    //   }
+    // );
+
+
+
+    console.log("Adding tracks to remote peer", stream.getTracks())
+    stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
+
+  },connectError);
 
   //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
 }
 
-actions.selectVideoSource = selectVideoSource;
-  function selectVideoSource(theParams, theTarget) {
-    var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
+
+// actions.selectAudioSource = selectAudioSource;
+// function selectAudioSource(theParams, theTarget) {
+//   var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
+//   ThisApp.currentAudioDeviceID = tmpParams.deviceId;
+
+//   var tmpConstraints = { video: false, audio: true, deviceId: {
+//       exact: [ThisApp.currentAudioDeviceID]
+//     }};
+  
+        
+//   navigator.getUserMedia(
+//     tmpConstraints,
+//     stream => {
+//       const localSource = ThisPage.getAppUse('local-audio');
+//       if (localSource) {
+//         localSource.srcObject = stream;
+//       }
+//       stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
+//     },
+//     error => {
+//       console.warn(error.message);
+//     }
+//   );
+
+//   //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
+// }
+
+// actions.selectVideoSource = selectVideoSource;
+//   function selectVideoSource(theParams, theTarget) {
+//     var tmpParams = ThisApp.getActionParams(theParams, theTarget, ['deviceId', 'label']);
 
 
-    ThisApp.currentVideoDeviceID = tmpParams.deviceId;
+//     ThisApp.currentVideoDeviceID = tmpParams.deviceId;
 
-    var tmpConstraints = {
-      video: {
-        deviceId: {
-          exact: [ThisApp.currentVideoDeviceID]
-        }
-      }, audio: true
-    };
+//     var tmpConstraints = {
+//       video: {
+//         deviceId: {
+//           exact: [ThisApp.currentVideoDeviceID]
+//         }
+//       }, audio: true
+//     };
 
 
 
-    navigator.getUserMedia(
-      tmpConstraints,
-      stream => {
-        const localVideo = ThisPage.getAppUse('local-video');
-        if (localVideo) {
-          localVideo.srcObject = stream;
-        }
-         var tmpFPS = 30;
-         processor.doLoad(localVideo, { frameDelayMS: 1000 / tmpFPS });
+//     navigator.getUserMedia(
+//       tmpConstraints,
+//       stream => {
+//         const localVideo = ThisPage.getAppUse('local-video');
+//         if (localVideo) {
+//           localVideo.srcObject = stream;
+//         }
+//         var tmpFPS = 30;
+//         processor.doLoad(localVideo, { frameDelayMS: 1000 / tmpFPS });
          
-        // var tmpCanvasSteam = processor.c2.captureStream();
-        // tmpCanvasSteam.getTracks().forEach(
-        //   track => {
-        //     ThisPage.activePeer.addTrack(
-        //       track,
-        //       tmpCanvasSteam
-        //     );
-        //   }
-        // );
+//         // var tmpCanvasSteam = processor.c2.captureStream();
+//         // tmpCanvasSteam.getTracks().forEach(
+//         //   track => {
+//         //     ThisPage.activePeer.addTrack(
+//         //       track,
+//         //       tmpCanvasSteam
+//         //     );
+//         //   }
+//         // );
 
        
 
-        stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
-      },
-      error => {
-        console.warn(error.message);
-      }
-    );
+//         stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
+//       },
+//       error => {
+//         console.warn(error.message);
+//       }
+//     );
 
-    //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
-  }
+//     //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
+//   }
 
 actions.refreshMediaSources = refreshMediaSources;
 function refreshMediaSources() {
@@ -338,11 +431,8 @@ function refreshAudioMediaSources() {
     ThisPage.loadSpot('audio-sources', tmpHTML.join('\n'));
   } else {
     ThisPage.loadSpot('audio-sources', '<div class="mar5"></div><div class="ui message orange mar5">Once you have given permission, press the <b>Refresh Source List</b> to see audio sources.</div>');
-
-    //--- Trigger media access to prompt for permission
-    navigator.getUserMedia({
-      audio: true, video: false
-    }, function () {}, function () {})
+    ThisPage.promptForMic();
+    
   }
 
 }
@@ -382,11 +472,7 @@ function refreshVideoMediaSources() {
     ThisPage.loadSpot('video-sources', tmpHTML.join('\n'));
   } else {
     ThisPage.loadSpot('video-sources', '<div class="mar5"></div><div class="ui message orange mar5">Once you have given permission, press the <b>Refresh Source List</b> to see audio sources.</div>');
-
-    //--- Trigger media access to prompt for permission
-    navigator.getUserMedia({
-      audio: true, video: false
-    }, function () {}, function () {})
+    ThisPage.promptForCamera();
   }
 
 }
