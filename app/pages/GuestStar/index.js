@@ -204,8 +204,10 @@ ThisPage.activeDataChannel.onmessage = onChannelMessage
 
 ThisPage.activePeer.ontrack = function({ streams: [stream] }) {
   const remoteVideo = ThisPage.getByAttr$({appuse: 'remote-video'}).get(0);
+  ThisPage.remoteVideo = remoteVideo;
   if (remoteVideo) {
-    console.log('remoteVideo set');
+    console.log('remoteVideo set', stream.getTracks());
+    ThisPage.lastRemoteStream = stream;
     remoteVideo.srcObject = stream;
   }
 };
@@ -236,6 +238,9 @@ refreshUI();
 
     //------- --------  --------  --------  --------  --------  --------  -------- 
     //~YourPageCode//~
+ThisApp.navigator = navigator;
+
+
 var sendChannel;
 
 ThisPage.getAppUse = function(theUse) {
@@ -245,19 +250,19 @@ ThisPage.getAppUse = function(theUse) {
 }
 
 function promptForCamera() {
-  navigator.mediaDevices.getUserMedia({
+  ThisApp.navigator.getUserMedia({
     video: true, audio: true
-  }).then(function(stream) {
+  },function(stream) {
     refreshUI();
-  },connectError);
+  },connectError)//.then();
 }
 
 function promptForMic() {
-  navigator.mediaDevices.getUserMedia({
+  ThisApp.navigator.getUserMedia({
     video: false, audio: true
-  }).then(function(stream) {
+  },function(stream) {
     refreshUI();
-  },connectError);
+  },connectError)//.then();
 }
 
 actions.selectAudioSource = selectAudioSource;
@@ -274,14 +279,13 @@ function selectAudioSource(theParams, theTarget) {
 
 
 
-  navigator.mediaDevices.getUserMedia(tmpConstraints).then(
-    function(stream) {
+  ThisApp.navigator.getUserMedia(tmpConstraints,function(stream) {
       const localSource = ThisPage.getAppUse('local-audio');
       if (localSource) {
         localSource.srcObject = stream;
       }
       stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
-    },connectError);
+    },connectError);//.then();
 }
 
 function connectError(theError) {
@@ -312,7 +316,7 @@ function selectVideoSource(theParams, theTarget) {
 
 
 
-  navigator.mediaDevices.getUserMedia(tmpConstraints).then(function(stream) {
+  ThisApp.navigator.getUserMedia(tmpConstraints,function(stream) {
 
     const localVideo = ThisPage.getAppUse('local-video');
     console.log('got video stream', typeof(stream))
@@ -340,10 +344,10 @@ function selectVideoSource(theParams, theTarget) {
 
 
 
-    console.log("Adding tracks to remote peer")
+    console.log("Adding tracks to remote peer", stream.getTracks())
     stream.getTracks().forEach(track => ThisPage.activePeer.addTrack(track, stream));
 
-  },connectError);
+  },connectError)//.then();
 
   //ThisPage.parts.am.setActiveDeviceId(tmpParams.deviceId);
 }

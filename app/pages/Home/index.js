@@ -269,8 +269,9 @@ actions.selectVideoSource = selectVideoSource;
         if (localVideo) {
           localVideo.srcObject = stream;
         }
-        // var tmpFPS = 30;
-        // processor.doLoad(localVideo, { frameDelayMS: 1000 / tmpFPS });
+         var tmpFPS = 30;
+         processor.doLoad(localVideo, { frameDelayMS: 1000 / tmpFPS });
+         
         // var tmpCanvasSteam = processor.c2.captureStream();
         // tmpCanvasSteam.getTracks().forEach(
         //   track => {
@@ -560,20 +561,23 @@ let processor = {
       self.ctx3.drawImage(image, 0, 0, self.width, self.height);
       self.ctx3Data = self.ctx3.getImageData(0, 0, self.width, self.height);
 
-      self.video.addEventListener("play", function() {
+      
+    });
+console.log('self.video',self.video);
+self.video.addEventListener("play", function() {
         // self.width = self.video.videoWidth ;
         // self.height = self.video.videoHeight;
+        console.log('processor on');
         self.timerCallback();
       }, false);
-
-    });
-
 
     
   },
 
   computeFrame: function() {
-
+this.computeAt = this.computeAt || 0;
+this.computeAt++;
+//console.log('this.computeAt',this.computeAt);
     
     this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
     let frame = this.ctx1.getImageData(0, 0, this.width, this.height);
@@ -611,7 +615,7 @@ let processor = {
         }
       }
 
-      this.showdiff = true;
+      this.showdiff = false;
       //--- show diff .. add this => || inRange
       //inCutout ||   
       if ( ( inRange && this.showdiff === true) ){
@@ -619,6 +623,7 @@ let processor = {
       }
         
     }
+    
     this.ctx2.putImageData(frame, 0, 0);
     //  ToDo: USE STREAM OF CANVAS?
     // if( ThisPage.activeDataChannel ){
